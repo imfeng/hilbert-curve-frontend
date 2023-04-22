@@ -93,7 +93,6 @@
 
     const initHilbertChart = 
       HilbertChart()
-        .width(window.screen.width * canvaseWidthRate)
         .margin(30)
         .hilbertOrder(hilbertOrder)
         .data(hilbertData)
@@ -109,16 +108,16 @@
         // .rangeTooltipContent(({ name, val }) => `<b>${name}</b>: ${val} (${Math.round(val / dataSum * 100)}%)`);
 
     const target = initHilbertChart(chartElement);
-    console.log({
-      target
-    })
     listenScreenSizeChange();
     function listenScreenSizeChange() {
-      const func = _.debounce((ev) => {
-        console.log(ev.target.screen.width)
-        target.width(ev.target.screen.width * canvaseWidthRate);
+      const resizeContent = _.debounce((ev) => {
+        const width = ev.target.screen.width * canvaseWidthRate;
+        const height = ev.target.screen.height;
+        const size = Math.min(width, height);
+        target.width(size);
       }, 500)
-      window.addEventListener('resize', func);
+      resizeContent();
+      window.addEventListener('resize', resizeContent);
     }
   </script>
 </body>
