@@ -212,7 +212,7 @@
 
     let carry = 0;
     const hilbertData = data.map(({ val, ...rest }) => {
-      const isDisabled = getRandomBoolean();
+      // const isDisabled = getRandomBoolean();
       const d = {
         start: carry,
         length: val, // getHilbertVal(val),
@@ -220,7 +220,7 @@
         ...rest,
         img: "/11.jpeg",
         hi: "123",
-        isDisabled,
+        isDisabled: false,
       };
       carry += d.length;
       return d;
@@ -345,13 +345,17 @@
 
   <script>
     // connect
+    const hilbertContractAddress = '0x112559F00408984CE1c8a7B6D844A61662182FA6';
     const unitPrice = ethers.utils.parseEther("0.001");
     const connectBtn = document.querySelector(".connectBtn");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     var web3State = {
       addr: null,
       contract: null,
+      abi: null,
     };
+
+
 
     $(".connectBtn").click(async function (event) {
       await provider.send("eth_requestAccounts", []);
@@ -362,19 +366,18 @@
 
       $(".connectBtn").text(addr.slice(0, 6) + "..." + addr.slice(-4));
 
-      const abi = await getABI();
+      web3State.contract = new ethers.Contract(
+        hilbertContractAddress,
+        await web3State.abi,
+        signer
+      );
     });
-
+    
     async function mintBuilding() {
       if (!web3State.addr) {
         alert("Please connect wallet first");
         return;
       }
-      web3State.contract = new ethers.Contract(
-        "0x112559F00408984CE1c8a7B6D844A61662182FA6",
-        abi,
-        signer
-      );
       const { addr, contract } = web3State;
       const hIndex = state.currentNode.start;
       const quadrant = 1;
@@ -391,10 +394,55 @@
       return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
-    async function getABI() {
-      const abi = await $.getJSON("./abi/abi.json");
-      return abi;
+    function initABI() {
+      const abi = $.getJSON("./abi/abi.json");
+      web3State.abi = abi;
+    }
+    initABI();
+
+
+    async function getAllNftTokens() {
+      console.log("getAllNftTokens");
+      const contract = new ethers.Contract(
+        hilbertContractAddress,
+        await web3State.abi,
+        provider,
+      );
+
+      const totalSupply = await contract.totalSupply();
+      const allNftMetadatas = [];
+      for (let index = 0; index < totalSupply; index++) {
+        const metadata = await contract.tokenURI(index);
+        allNftMetadatas.push(tokenURI2Json(metadata));
+      }
+      allNftMetadatas.forEach(data => {
+        const hIndex = parseInt(getAttributesFromData(data, 'hIndex'));
+        const size = parseInt(getAttributesFromData(data, 'Size'));
+        const sizeLength = Math.pow(Math.pow(2, size), 2);
+        for (let index = 0; index < sizeLength; index++) {
+          const currentHIndex = hIndex + index;
+          hilbertData[currentHIndex].isDisabled = true;
+        }
+      });
+      resizeContent();
+    }
+    getAllNftTokens();
+
+    function base64DataURItoString(datauri) {
+      const base64 = datauri.replace('data:application/json;base64,', '');
+      return atob(base64);
     }
 
+    function tokenURI2Json(tokenURI) {
+      const base64 = tokenURI.replace('data:application/json;base64,', '');
+      const json = atob(base64);
+      return JSON.parse(json);
+    }
+
+    function getAttributesFromData(data, attr) {
+      const attributes = data.attributes;
+      const attrObj = attributes.find(v => v.trait_type === attr);
+      return attrObj.value;
+    }
   </script>
 </body>
