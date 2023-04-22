@@ -33,6 +33,9 @@ export default Kapsule({
   },
 
   methods: {
+    hilbert: function(state) {
+      return state.hilbert;
+    },
     focusOn: function(state, pos, length, transitionDuration) {
       setTimeout(() => { // async so that it runs after initialization
         const N_SAMPLES = Math.pow(4, 2) + 1; // +1 to sample outside of bit boundaries
@@ -543,7 +546,7 @@ export default Kapsule({
       rangePaths = rangePaths.merge(newPaths);
 
       const getColor = (d) => {
-        // return d.color;
+        return d.color;
         if(d.isDisabled) {
           return 'grey';
         }

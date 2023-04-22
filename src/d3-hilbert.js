@@ -35,7 +35,7 @@ export default function() {
       function distance2Point(d, n) {
           var rx, ry, t = d,
               xy = [0, 0];
-          const maxY = n - 1;
+        //   const maxY = n - 1;
           
 
           for (var s = 1; s < n; s *= 2) {
@@ -47,7 +47,7 @@ export default function() {
               xy[1] += (s * ry);
               t /= 4;
           }
-          xy[1] = maxY - xy[1];
+        //   xy[1] = maxY - xy[1];
           return xy;
       }
 

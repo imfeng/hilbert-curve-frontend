@@ -186,6 +186,7 @@
           <button class="mintBtn" id="mint" onclick="mintBuilding()">
             Mint
           </button>
+          <input type="file" id="imageInput" accept="image/*">
         </div>
       </div>
     </div>
@@ -209,6 +210,7 @@
       name: `${i}`,
       val: 1,
     }));
+    console.log({dataLength: data.length})
 
     const dataSum = data
       .map(({ val }) => val)
@@ -466,5 +468,105 @@
       const attrObj = attributes.find(v => v.trait_type === attr);
       return attrObj.value;
     }
+
+    function listenImage() {
+      const imageInput = document.getElementById('imageInput');
+      imageInput.addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        const image = new Image();
+        image.src = URL.createObjectURL(file);
+        image.onload = () => {
+          const dimension = 32;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = dimension;
+          canvas.height = dimension;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(image, 0, 0, dimension, dimension);
+          
+          const imageData = ctx.getImageData(0, 0, dimension, dimension);
+          const rgbArray2D = [];
+          for (let row = 0; row < dimension; row++) {
+            const rowData = [];
+            for (let col = 0; col < dimension; col++) {
+              const i = (row * dimension + col) * 4;
+              const r = imageData.data[i];
+              const g = imageData.data[i + 1];
+              const b = imageData.data[i + 2];
+              rowData.push([r, g, b]);
+            }
+            rgbArray2D.push(rowData);
+          }
+          console.log(rgbArray2D)
+          const hilbert = target.hilbert();
+          rgbArray2D.forEach((row, rowIdx) => {
+            row.forEach((rgb, colIdx) => {
+              const hIndex = xy2hIndex(colIdx, rowIdx, hilbertOrder);
+              const [r, g, b] = rgb;
+              hilbertData[hIndex].color = `rgb(${r}, ${g}, ${b})`;
+            })
+          });
+          resizeContent();
+
+          console.log('RGB array length:', rgbArray2D.length); // Output: 65536 (256 * 256)
+        };
+      });
+    }
+    listenImage();
+
+    function xy2hIndex(x, y, n) {
+      if (n > 128) throw new Error("OrderMustBeLessThan128: " + n);
+
+      // N: side length of 2D Hilbert curve
+      const N = 1 << n;
+      if (x >= N || y >= N) throw new Error("PointOutOfRange: (" + x + ", " + y + ", " + n + ")");
+
+      let hIndex = 0;
+
+      // (s = N; s > 1; s >>= 1), s2 = s / 2
+      for (let s2 = N / 2; s2 > 0; s2 >>= 1) {
+        hIndex <<= 2;
+        let temp;
+
+        // right
+        if (x >= s2) {
+          // right-top
+          if (y >= s2) {
+            hIndex = hIndex + 2;
+            x = x - s2;
+            y = y - s2;
+            continue;
+
+            // right-bottom
+          } else {
+            hIndex = hIndex + 3;
+            temp = y;
+            x = x - s2;
+            y = s2 - 1 - x;
+            x = s2 - 1 - temp;
+            continue;
+          }
+
+          // left
+        } else {
+          // left-top
+          if (y >= s2) {
+            hIndex = hIndex + 1;
+            y = y - s2;
+            continue;
+
+            // left-bottom
+          } else {
+            temp = x;
+            x = y;
+            y = temp;
+            continue;
+          }
+        }
+      }
+      return hIndex;
+    }
+
   </script>
 </body>

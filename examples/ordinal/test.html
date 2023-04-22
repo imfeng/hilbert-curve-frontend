@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image to RGB Array</title>
+</head>
+<body>
+  <input type="file" id="imageInput" accept="image/*">
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    imageInput.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      const image = new Image();
+      image.src = URL.createObjectURL(file);
+      image.onload = () => {
+        const dimension = 8;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = dimension;
+        canvas.height = dimension;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0, dimension, dimension);
+        
+        const imageData = ctx.getImageData(0, 0, dimension, dimension);
+        const rgbArray = [];
+        for (let i = 0; i < imageData.data.length; i += 4) {
+          const r = imageData.data[i];
+          const g = imageData.data[i + 1];
+          const b = imageData.data[i + 2];
+          rgbArray.push([r, g, b]);
+        }
+
+        console.log(rgbArray);
+        console.log('RGB array length:', rgbArray.length); // Output: 65536 (256 * 256)
+      };
+    });
+  </script>
+</body>
+</html>
