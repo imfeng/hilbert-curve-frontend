@@ -35,6 +35,8 @@ export default function() {
       function distance2Point(d, n) {
           var rx, ry, t = d,
               xy = [0, 0];
+          const maxY = n - 1;
+          
 
           for (var s = 1; s < n; s *= 2) {
               rx = 1 & (t / 2);
@@ -45,6 +47,7 @@ export default function() {
               xy[1] += (s * ry);
               t /= 4;
           }
+          xy[1] = maxY - xy[1];
           return xy;
       }
 
@@ -85,6 +88,7 @@ export default function() {
       range.cellWidth = d.cellWidth;
       range.startCell = d.startCell;
       range.pathVertices = d.pathVertices;
+      range.vec = d.vec;
 
       return hilbertLayout;
   };
@@ -132,6 +136,12 @@ export default function() {
       var maxPos = Math.pow(4, order);
       start = Math.min(start, maxPos);
       length = Math.min(length, maxPos - start);
+      console.log({
+        length,
+        start,
+        maxPos
+        
+      })
 
       // nSide is on a binary boundary 2^0, 2^1, 2^2, ...
       var nSide = Math.pow(2, order),
@@ -142,28 +152,45 @@ export default function() {
           prevPnt = startCell,
           pnt;
 
-      for (var i=1; i < length; i++) {
-          pnt = hilbert.distance2Point(start + i, nSide);
+          for (var i=1; i < length; i++) {
+            pnt = hilbert.distance2Point(start + i, nSide);
+  
+            vertices.push(
+                pnt[0]>prevPnt[0]
+                    ? 'R'
+                    : (pnt[0]<prevPnt[0]
+                        ? 'L'
+                        : (pnt[1]>prevPnt[1]
+                            ? 'D'
+                            : 'U'
+                        )
+                    )
+            );
+  
+            prevPnt = pnt;
+        }
 
-          vertices.push(
-              pnt[0]>prevPnt[0]
-                  ? 'R'
-                  : (pnt[0]<prevPnt[0]
-                      ? 'L'
-                      : (pnt[1]>prevPnt[1]
-                          ? 'D'
-                          : 'U'
-                      )
-                  )
-          );
-
-          prevPnt = pnt;
-      }
+        const pp = hilbert.distance2Point(start + 1, nSide);
+        const startPP = startCell;
+        const vec = pp[0]>startPP[0]
+            ? 'R'
+            : (pp[0]<startPP[0]
+                ? 'L'
+                : (pp[1]>startPP[1]
+                    ? 'D'
+                    : 'U'
+                )
+            );
 
       return {
           cellWidth: cellWidth,
           startCell: startCell,
-          pathVertices: vertices
+          pathVertices: vertices,
+          vec,
       };
   }
+}
+
+function log2(n) {
+    return Math.log(n) / Math.log(2);
 }

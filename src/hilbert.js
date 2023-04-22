@@ -3,7 +3,7 @@ import { scaleLinear as d3ScaleLinear, scaleOrdinal as d3ScaleOrdinal } from 'd3
 import { schemePaired as d3SchemePaired } from 'd3-scale-chromatic';
 import { axisLeft as d3AxisLeft, axisRight as d3AxisRight, axisTop as d3AxisTop, axisBottom as d3AxisBottom } from 'd3-axis';
 import { zoom as d3Zoom, zoomTransform as d3ZoomTransform } from 'd3-zoom';
-import d3Hilbert from 'd3-hilbert';
+import d3Hilbert from './d3-hilbert';
 import d3Tip from 'd3-tip';
 import gsap from 'gsap';
 import './canvas-textpath/ctxtextpath.js';
@@ -330,6 +330,7 @@ export default Kapsule({
   },
 
   update: function(state) {
+    console.log({state})
     const canvasWidth = state.canvasWidth = state.width || Math.min(window.innerWidth, window.innerHeight) - state.margin * 2;
     const labelAcessor = accessorFn(state.rangeLabel);
     const colorAccessor = state.rangeColor ? accessorFn(state.rangeColor) : (d => state.defaultColorScale(labelAcessor(d)));
@@ -410,6 +411,7 @@ export default Kapsule({
           state.rangeTooltip.style('display', 'none');
           state.onRangeHover && state.onRangeHover(null);
         });
+      newPaths.append('line');
 
       newPaths.append('path');
 
@@ -441,13 +443,52 @@ export default Kapsule({
           });
 
       // Ensure propagation of data binding into sub-elements
+      console.log('???')
+      // rangePaths.select('line');
+
+      // <line id="line" x1="10" y1="10" x2="90" y2="90" stroke="red" />
+
+
       rangePaths.select('path');
 
       rangePaths = rangePaths.merge(newPaths);
 
+      rangePaths.selectAll('line')
+        .attr('x1', d => {
+          if(d.vec === 'U' || d.vec === 'D') {
+            return 0.1;
+          }
+          return 0;
+        })
+        .attr('y1', d => {
+          if(d.vec === 'L' || d.vec === 'R') {
+            return 0.1;
+          }
+          return 0;
+        })
+        .attr('transform', d => {
+          switch (d.vec) {
+            case 'U':
+              return `translate(-0.05, -0.45)`;
+              break;
+            case 'D':
+              return `translate(-0.05, 0.45)`;
+              break;
+            case 'L':
+              return `translate(-0.45, -0.05)`;
+              break;
+            case 'R':
+              return `translate(0.45, -0.05)`;
+              break;
+            default:
+              break;
+          }
+        })
+        .style('stroke', 'red');
+
       rangePaths.selectAll('path') //.transition()
         .attr('d', d => getHilbertPath(d.pathVertices))
-        .style('stroke', colorAccessor)
+        .style('stroke', '#c1c1c1') // colorAccessor, background Color
         .style('stroke-width', d => 1 - paddingAccessor(d))
         .style('cursor', state.onRangeClick ? 'pointer' : null);
 
@@ -488,6 +529,7 @@ export default Kapsule({
       //
 
       function getHilbertPath(vertices) {
+        console.log('getHilbertPath')
         let path = 'M0 0L0 0';
 
         vertices.forEach(function(vert) {

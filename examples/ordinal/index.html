@@ -1,6 +1,6 @@
 <head>
-  <script src='//unpkg.com/hilbert-chart'></script>
-  <!--<script src='../../dist/hilbert-chart.js'></script>-->
+  <!-- <script src='//unpkg.com/hilbert-chart'></script> -->
+  <script src='../../dist/hilbert-chart.js'></script>
 
   <style>
     body {
@@ -10,23 +10,50 @@
 
     #chart { display: inline-block; }
   </style>
+  <style>
+    svg path {
+      fill: none;
+      stroke: #3A5894;
+      stroke-width: 0.3;
+      stroke-linecap: square;
+    }
+    
+    svg path.skeleton {
+      stroke: #EEE;
+      stroke-width: 0.1;
+    }
+    
+    #val-tooltip {
+      display: none;
+      position: absolute;
+      margin-top: 22px;
+      margin-left: -1px;
+      padding: 5px;
+      border-radius: 3px;
+      font: 11px sans-serif;
+      color: #eee;
+      background: rgba(0,0,140,0.9);
+      text-align: center;
+      pointer-events: none;
+    }
+    </style>
 </head>
 <body>
   <div id='chart'></div>
 
   <script>
+    // Hulbert Spec
+    const hilbertOrder = 3;
+    const hilbertLength = Math.pow(4, hilbertOrder);
+
     // Gen random data
-    const N_CAT = 14;
+    const N_CAT = 64// Math.pow(2, hilbertOrder);
     const MAX_VAL = 100;
     const data = [...Array(N_CAT)].map((_, i) => ({
-      name: `Series ${i+1}`,
-      val: Math.round(Math.random() * MAX_VAL)
+      name: `${i}`,
+      val: 1,
     }));
 
-    //
-
-    const hilbertOrder = 8;
-    const hilbertLength = Math.pow(4, hilbertOrder);
 
     const dataSum = data.map(({ val }) => val).reduce((acc, val) => acc + val, 0);
     const getHilbertVal = val => Math.round(val / dataSum * hilbertLength);
@@ -35,7 +62,7 @@
     const hilbertData = data.map(({ val, ...rest }) => {
       const d = {
         start: carry,
-        length: getHilbertVal(val),
+        length: val, // getHilbertVal(val),
         val,
         ...rest
       };
@@ -43,13 +70,24 @@
       return d;
     });
 
-    HilbertChart()
-      .margin(40)
-      .hilbertOrder(hilbertOrder)
-      .data(hilbertData)
-      .valFormatter(n => Math.round(n / hilbertLength * dataSum))
-      .showValTooltip(false)
-      .rangeTooltipContent(({ name, val }) => `<b>${name}</b>: ${val} (${Math.round(val / dataSum * 100)}%)`)
-      (document.getElementById('chart'));
+    const chartElement = document.getElementById('chart');
+
+    const initHilbertChart = 
+      HilbertChart()
+        .margin(50)
+        .hilbertOrder(hilbertOrder)
+        .data(hilbertData)
+        .rangePadding(0.3)
+        // .valFormatter(n => Math.round(n / hilbertLength * dataSum))
+        .showValTooltip(true)
+        .onRangeClick((d) => {
+          console.log('click', d);
+        })
+        // .onRangeHover((d) => {
+        //   console.log('hover', d);
+        // })
+        // .rangeTooltipContent(({ name, val }) => `<b>${name}</b>: ${val} (${Math.round(val / dataSum * 100)}%)`);
+
+    initHilbertChart(chartElement);
   </script>
 </body>

@@ -61,5 +61,23 @@ export default [
       format: 'es'
     }],
     plugins: [dts()]
+  },
+  {
+    input: 'src/d3-hilbert.js',
+    output: [
+      {
+        format: 'es',
+        name: 'D3Hilbert',
+        strict: false,
+        sourcemap: true,
+        file: `dist/d3-hilbert.js`
+      }
+    ],
+    plugins: [
+      postCss(),
+      babel({ exclude: 'node_modules/**' }),
+      resolve(),
+      commonJs()
+    ]
   }
 ];
