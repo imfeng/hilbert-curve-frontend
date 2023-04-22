@@ -333,13 +333,26 @@
       const signer = provider.getSigner();
       let addr = await signer.getAddress();
       addr = addr.slice(0, 6) + "..." + addr.slice(-4);
-
+      
       $(".connectBtn").text(addr);
+
+      const abi = await getABI();
+      const contract = new ethers.Contract(
+        "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        abi,
+        provider
+      );
     });
 
     function delay(ms) {
       return new Promise((resolve) => setTimeout(resolve, ms));
     }
+
+    async function getABI() {
+      const abi = await $.getJSON("./abi/abi.json");
+      return abi;
+    }
+    
   </script>
 
 </body>
