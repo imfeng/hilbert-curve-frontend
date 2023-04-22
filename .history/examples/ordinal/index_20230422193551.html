@@ -1,12 +1,7 @@
 <head>
   <!-- <script src='//unpkg.com/hilbert-chart'></script> -->
-  <script src="../../dist/hilbert-chart.js"></script>
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
-    integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
+  <script src='../../dist/hilbert-chart.js'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
     body {
       width: 100vw;
@@ -27,22 +22,22 @@
     #web3 {
       width: 30%;
       flex: 1 1 0;
-      background: #3a5894;
+      background: #3A5894;
     }
   </style>
   <style>
     svg path {
       fill: none;
-      stroke: #3a5894;
+      stroke: #3A5894;
       stroke-width: 0.3;
       stroke-linecap: square;
     }
-
+    
     svg path.skeleton {
-      stroke: #eee;
+      stroke: #EEE;
       stroke-width: 0.1;
     }
-
+    
     #val-tooltip {
       display: none;
       position: absolute;
@@ -52,36 +47,35 @@
       border-radius: 3px;
       font: 11px sans-serif;
       color: #eee;
-      background: rgba(0, 0, 140, 0.9);
+      background: rgba(0,0,140,0.9);
       text-align: center;
       pointer-events: none;
     }
-  </style>
+    </style>
 </head>
 <body>
   <div id="content">
-    <div id="chart"></div>
-    <div id="web3"></div>
+    <div id='chart'></div>
+    <div id='web3'></div>
   </div>
 
   <script>
-    // Hilbert Spec
+    // Hulbert Spec
     const canvaseWidthRate = 0.63;
     const hilbertOrder = 3;
     const hilbertLength = Math.pow(4, hilbertOrder);
 
     // Gen random data
-    const N_CAT = 64; // Math.pow(2, hilbertOrder);
+    const N_CAT = 64// Math.pow(2, hilbertOrder);
     const MAX_VAL = 100;
     const data = [...Array(N_CAT)].map((_, i) => ({
       name: `${i}`,
       val: 1,
     }));
 
-    const dataSum = data
-      .map(({ val }) => val)
-      .reduce((acc, val) => acc + val, 0);
-    const getHilbertVal = (val) => Math.round((val / dataSum) * hilbertLength);
+
+    const dataSum = data.map(({ val }) => val).reduce((acc, val) => acc + val, 0);
+    const getHilbertVal = val => Math.round(val / dataSum * hilbertLength);
 
     let carry = 0;
     const hilbertData = data.map(({ val, ...rest }) => {
@@ -89,28 +83,29 @@
         start: carry,
         length: val, // getHilbertVal(val),
         val,
-        ...rest,
+        ...rest
       };
       carry += d.length;
       return d;
     });
 
-    const chartElement = document.getElementById("chart");
+    const chartElement = document.getElementById('chart');
 
-    const initHilbertChart = HilbertChart()
-      .margin(30)
-      .hilbertOrder(hilbertOrder)
-      .data(hilbertData)
-      .rangePadding(0.3)
-      // .valFormatter(n => Math.round(n / hilbertLength * dataSum))
-      .showValTooltip(true)
-      .onRangeClick((d) => {
-        console.log("click", d);
-      });
-    // .onRangeHover((d) => {
-    //   console.log('hover', d);
-    // })
-    // .rangeTooltipContent(({ name, val }) => `<b>${name}</b>: ${val} (${Math.round(val / dataSum * 100)}%)`);
+    const initHilbertChart = 
+      HilbertChart()
+        .margin(30)
+        .hilbertOrder(hilbertOrder)
+        .data(hilbertData)
+        .rangePadding(0.3)
+        // .valFormatter(n => Math.round(n / hilbertLength * dataSum))
+        .showValTooltip(true)
+        .onRangeClick((d) => {
+          console.log('click', d);
+        })
+        // .onRangeHover((d) => {
+        //   console.log('hover', d);
+        // })
+        // .rangeTooltipContent(({ name, val }) => `<b>${name}</b>: ${val} (${Math.round(val / dataSum * 100)}%)`);
 
     const target = initHilbertChart(chartElement);
     listenScreenSizeChange();
@@ -120,9 +115,9 @@
         const height = ev.target.screen.height;
         const size = Math.min(width, height);
         target.width(size);
-      }, 500);
+      }, 500)
       resizeContent();
-      window.addEventListener("resize", resizeContent);
+      window.addEventListener('resize', resizeContent);
     }
   </script>
 </body>
