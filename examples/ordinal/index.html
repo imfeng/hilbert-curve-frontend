@@ -103,7 +103,7 @@
     .selectBox input {
       margin: 0 5px;
     }
-    .checkbox {
+    .sizeItemSelector {
       width: 30px;
       height: 30px;
     }
@@ -136,42 +136,38 @@
         <div class="boxGroup">
           <div class="selectBox">
             <input
-              class="checkbox"
-              type="checkbox"
-              id="smallLand"
-              name="smallLand"
-              value="smallLand"
+              class="sizeItemSelector"
+              type="radio"
+              name="sizeItemSelector"
+              value="0"
               checked
             />
             <label for="smallLand">1x1</label>
           </div>
           <div class="selectBox">
             <input
-              class="checkbox"
-              type="checkbox"
-              id="mediumLand"
-              name="mediumLand"
-              value="mediumLand"
+              class="sizeItemSelector"
+              type="radio"
+              name="sizeItemSelector"
+              value="1"
             />
             <label for="mediumLand">2x2</label>
           </div>
           <div class="selectBox">
             <input
-              class="checkbox"
-              type="checkbox"
-              id="largeLand"
-              name="largeLand"
-              value="largeLand"
+              class="sizeItemSelector"
+              type="radio"
+              name="sizeItemSelector"
+              value="2"
             />
             <label for="largeLand">4x4</label>
           </div>
           <div class="selectBox">
             <input
-              class="checkbox"
-              type="checkbox"
-              id="xLargeLand"
-              name="xLargeLand"
-              value="xLargeLand"
+              class="sizeItemSelector"
+              type="radio"
+              name="sizeItemSelector"
+              value="3"
             />
             <label for="xLargeLand">8x8</label>
           </div>
@@ -184,29 +180,9 @@
   </div>
 
   <script>
-    // connect
-    const connectBtn = document.querySelector(".connectBtn");
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-    $(".connectBtn").click(async function (event) {
-      await provider.send("eth_requestAccounts", []);
-      await delay(1000);
-      const signer = provider.getSigner();
-      let addr = await signer.getAddress();
-      addr = addr.slice(0, 6) + "..." + addr.slice(-4);
-
-      $(".connectBtn").text(addr);
-    });
-
-    function delay(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-  </script>
-
-  <script>
     // Hilbert Spec
     const canvaseWidthRate = 0.63;
-    const hilbertOrder = 4;
+    const hilbertOrder = 5;
     const hilbertLength = Math.pow(4, hilbertOrder);
 
     // Gen random data
@@ -235,6 +211,10 @@
       carry += d.length;
       return d;
     });
+    var state = {
+      currentNode: null,
+      size: 0,
+    }
 
     const chartElement = document.getElementById("chart");
 
@@ -242,38 +222,10 @@
       .margin(30)
       .hilbertOrder(hilbertOrder)
       .data(hilbertData)
-      .rangePadding(0.3)
+      .rangePadding(0.1)
       // .valFormatter(n => Math.round(n / hilbertLength * dataSum))
       .showValTooltip(true)
-      .onRangeClick(function (d) {
-        console.log("click", d);
-        console.log(this)
-        // target.addActiveNode(d.start);
-        const size = 1;
-        const sizeLength = Math.pow(Math.pow(2, size), 2);
-        const leadNodes = getLeadNodes(d.start, hilbertOrder);
-        const leadNode = parseInt(leadNodes[size]);
-        const nodes = new Array(sizeLength).fill(leadNode).map((v, i) => v + i)
-        const resultMap = nodes.reduce((acc, v) => {
-          acc[v] = true;
-          return acc;
-        }, {})
-        console.log({
-          size,
-          sizeLength,
-          leadNodes,
-          nodes,
-          resultMap,
-        })
-        target.activeMap(resultMap);
-        // target.activeMap({
-        //   ...target.activeMap(),
-        //   [d.start]: true
-        // });
-      
-
-        
-      });
+      .onRangeClick(onClickNode);
     // .onRangeHover((d) => {
     //   console.log('hover', d);
     // })
@@ -318,5 +270,76 @@
     }
     return leadNodes.map(v => v.toString());
   }
+
+  function listenSizeRadioOnchange() {
+    $('input[type=radio][name=sizeItemSelector]').change(function() {
+      state.size = getCurrentSize();
+      console.log('onSizeRadioOnchange')
+      if(state.currentNode) {
+        onClickNode(state.currentNode);
+      }
+    });
+  }
+  listenSizeRadioOnchange();
+
+  function onClickNode(d) {
+    console.log("click", d);
+    const size = getCurrentSize();
+    console.log({size})
+    const sizeLength = Math.pow(Math.pow(2, size), 2);
+    const leadNodes = getLeadNodes(d.start, hilbertOrder);
+    const leadNode = parseInt(leadNodes[size]);
+    const leadD = hilbertData[leadNode];
+    for (let index = leadD.start; index < leadD.start + sizeLength; index++) {
+      const dd = hilbertData[index];
+      if(dd.disabled) {
+        state.currentNode = null;
+        target.resetActiveNodes();
+        alert('This land is not available');
+        return;
+      }
+    }
+    state.currentNode = leadD;
+    const nodes = new Array(sizeLength).fill(leadNode).map((v, i) => v + i)
+    const resultMap = nodes.reduce((acc, v) => {
+      acc[v] = true;
+      return acc;
+    }, {})
+    console.log({
+      currentNode: state.currentNode,
+      size,
+      sizeLength,
+      leadNodes,
+      nodes,
+      resultMap,
+    })
+    target.activeMap(resultMap);
+  }
+
+  function getCurrentSize() {
+    return parseInt($('input[type=radio][name=sizeItemSelector]:checked').val());
+  }
+  
   </script>
+
+  <script>
+    // connect
+    const connectBtn = document.querySelector(".connectBtn");
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    $(".connectBtn").click(async function (event) {
+      await provider.send("eth_requestAccounts", []);
+      await delay(1000);
+      const signer = provider.getSigner();
+      let addr = await signer.getAddress();
+      addr = addr.slice(0, 6) + "..." + addr.slice(-4);
+
+      $(".connectBtn").text(addr);
+    });
+
+    function delay(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+  </script>
+
 </body>
