@@ -27,7 +27,8 @@ export default Kapsule({
     showRangeTooltip: { default: true, triggerUpdate: false },
     rangeTooltipContent: { triggerUpdate: false },
     onRangeClick: { triggerUpdate: false },
-    onRangeHover: { triggerUpdate: false }
+    onRangeHover: { triggerUpdate: false },
+    activeMap: { default: {}, triggerUpdate: true },
   },
 
   methods: {
@@ -155,11 +156,30 @@ export default Kapsule({
           .style('text-anchor', 'end');
 
       return this;
+    },
+    toggleLinepaths(state) {
+      state.showLinepaths = !state.showLinepaths;
+      // console.log(state)
+      // this.update();
+      return this;
+    },
+    addActiveNode(state, hIndex) {
+      state.activeMap = {
+        ...state.activeMap,
+        [hIndex]: true
+      }
+      console.log(state)
+      return true;
+    },
+    resetActiveNodes(state) {
+      state.activeMap = {};
+      return true;
     }
   },
 
   stateInit() {
     return {
+      showLinepaths: false,
       hilbert: d3Hilbert().simplifyCurves(true),
       defaultColorScale: d3ScaleOrdinal(d3SchemePaired),
       zoomBox: [[0, 0], [N_TICKS, N_TICKS]],
@@ -222,6 +242,7 @@ export default Kapsule({
 
       hilbertCanvas.append('g').attr('class', 'ranges-canvas');
       hilbertCanvas.append('g').attr('class', 'markers-canvas');
+      hilbertCanvas.append('g').attr('class', 'pathlines-canvas');
 
       // Zoom binding
       zoomCanvas.call(state.zoom);
@@ -380,6 +401,75 @@ export default Kapsule({
         .attr('height', state.canvasWidth);
 
       // D3 digest
+      // line START
+      if(state.showLinepaths) {
+        let pathlinePaths = state.svg.select('.pathlines-canvas')
+          .selectAll('.pathline-segment')
+          .data(state.data.slice());
+          pathlinePaths.exit().remove();
+        const newLinePaths = pathlinePaths.enter().append('g')
+          .attr('class', 'pathline-segment')
+        newLinePaths.append('path');
+        newLinePaths.append('line');
+        pathlinePaths = pathlinePaths.merge(newLinePaths);
+  
+        const maxNums = Math.pow(Math.pow(2, state.hilbertOrder), 2);
+        pathlinePaths.selectAll('line')
+          .attr('class', 'pathline')
+          .attr('x1', d => {
+            if(d.vec === 'U' || d.vec === 'D') {
+              return 0.1;
+            }
+            return 0;
+          })
+          .attr('y1', d => {
+            if(d.vec === 'L' || d.vec === 'R') {
+              return 0.1;
+            }
+            return 0;
+          })
+          .attr('transform', d => {
+            switch (d.vec) {
+              case 'U':
+                return `translate(-0.05, -0.45)`;
+                break;
+              case 'D':
+                return `translate(-0.05, 0.45)`;
+                break;
+              case 'L':
+                return `translate(-0.45, -0.05)`;
+                break;
+              case 'R':
+                return `translate(0.45, -0.05)`;
+                break;
+              default:
+                break;
+            }
+          })
+          .style('stroke', d => {
+            const index = d.start + d.val;
+            if(index === maxNums) {
+              return 'transparent';
+            }
+            return 'red';
+          });
+        pathlinePaths.selectAll('path') //.transition()
+          .attr('d', d => getHilbertPath(d.pathVertices))
+          .style('stroke', 'transparent') // colorAccessor, background Color
+          .style('stroke-width', d => 1 - paddingAccessor(d))
+          .style('cursor', state.onRangeClick ? 'pointer' : null);
+        pathlinePaths
+          .attr('transform', d =>
+            `scale(${d.cellWidth}) translate(${d.startCell[0] + .5},${d.startCell[1] + .5})`
+          );
+      } else {
+        pathlinePaths = state.svg.select('.pathlines-canvas')
+        .selectAll('.pathline-segment')
+        .data([]);
+        pathlinePaths.exit().remove();
+      }
+      
+      // range START
       let rangePaths = state.svg.select('.ranges-canvas')
         .selectAll('.hilbert-segment')
         .data(state.data.slice());
@@ -411,8 +501,7 @@ export default Kapsule({
           state.rangeTooltip.style('display', 'none');
           state.onRangeHover && state.onRangeHover(null);
         });
-      newPaths.append('line');
-
+        
       newPaths.append('path');
 
       newPaths.append('text')
@@ -452,49 +541,10 @@ export default Kapsule({
 
       rangePaths = rangePaths.merge(newPaths);
 
-      const maxNums = Math.pow(Math.pow(2, state.hilbertOrder), 2);
-      rangePaths.selectAll('line')
-        .attr('x1', d => {
-          if(d.vec === 'U' || d.vec === 'D') {
-            return 0.1;
-          }
-          return 0;
-        })
-        .attr('y1', d => {
-          if(d.vec === 'L' || d.vec === 'R') {
-            return 0.1;
-          }
-          return 0;
-        })
-        .attr('transform', d => {
-          switch (d.vec) {
-            case 'U':
-              return `translate(-0.05, -0.45)`;
-              break;
-            case 'D':
-              return `translate(-0.05, 0.45)`;
-              break;
-            case 'L':
-              return `translate(-0.45, -0.05)`;
-              break;
-            case 'R':
-              return `translate(0.45, -0.05)`;
-              break;
-            default:
-              break;
-          }
-        })
-        .style('stroke', d => {
-          const index = d.start + d.val;
-          if(index === maxNums) {
-            return 'transparent';
-          }
-          return 'red';
-        });
-
+      const getColor = (d) => state.activeMap[d.start] ? '#3ff341' : '#c1c1c1';
       rangePaths.selectAll('path') //.transition()
         .attr('d', d => getHilbertPath(d.pathVertices))
-        .style('stroke', '#c1c1c1') // colorAccessor, background Color
+        .style('stroke', getColor) // colorAccessor, background Color
         .style('stroke-width', d => 1 - paddingAccessor(d))
         .style('cursor', state.onRangeClick ? 'pointer' : null);
 
@@ -652,3 +702,21 @@ export default Kapsule({
     }
   }
 });
+
+
+function getLeadNodes(hIndex, n) {
+  const MAX_UINT256 = BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+  const N = n + 1;
+  let leadNodes = []
+  let mask = MAX_UINT256;
+  leadNodes.push(hIndex.toString());
+  for (let i = 1; i < N; i++) {
+    // Shift 2 bits to get the next lead node
+    mask = mask << 2n;
+    const leadNode = BigInt(hIndex) & mask;
+    leadNodes.push(leadNode.toString());
+    // The last lead node is 0
+    if (leadNode === 0n) break;
+  }
+  return leadNodes.map(v => v.toString());
+}
