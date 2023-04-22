@@ -345,14 +345,18 @@
       $(".connectBtn").text(addr.slice(0, 6) + "..." + addr.slice(-4));
 
       const abi = await getABI();
+    });
+
+    async function mintBuilding() {
+      if (!web3State.addr) {
+        alert("Please connect wallet first");
+        return;
+      }
       web3State.contract = new ethers.Contract(
         "0x112559F00408984CE1c8a7B6D844A61662182FA6",
         abi,
         signer
       );
-    });
-
-    async function mintBuilding() {
       const { addr, contract } = web3State;
       const hIndex = state.currentNode.start;
       const quadrant = 1;
