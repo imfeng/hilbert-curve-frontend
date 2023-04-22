@@ -1,4 +1,5 @@
 <head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
   <!-- <script src='//unpkg.com/hilbert-chart'></script> -->
   <script src="../../dist/hilbert-chart.js"></script>
   <script
@@ -6,6 +7,10 @@
     integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
+  ></script>
+  <script
+    src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+    type="application/javascript"
   ></script>
   <style>
     body {
@@ -57,12 +62,111 @@
       pointer-events: none;
     }
   </style>
+  <style>
+    .connectBox {
+      display: flex;
+      flex-direction: row;
+      justify-content: right;
+      align-items: center;
+      margin: 1.5rem;
+    }
+    .connectBtn {
+      background-color: gray;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .connectBtn:hover {
+      background-color: white;
+      color: gray;
+    }
+    .boxGroup {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+    }
+    .selectBox {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+    }
+    .selectBox input {
+      margin: 0 5px;
+    }
+  </style>
 </head>
 <body>
   <div id="content">
     <div id="chart"></div>
-    <div id="web3"></div>
+    <div id="web3">
+      <div>
+        <div class="connectBox">
+          <button class="connectBtn">connect</button>
+        </div>
+        <div class="boxGroup">
+          <div class="selectBox">
+            <input
+              type="checkbox"
+              id="smallLand"
+              name="smallLand"
+              value="smallLand"
+              checked
+            />
+            <label for="smallLand">1x1</label>
+          </div>
+          <div class="selectBox">
+            <input
+              type="checkbox"
+              id="mediumLand"
+              name="mediumLand"
+              value="mediumLand"
+            />
+            <label for="mediumLand">2x2</label>
+          </div>
+          <div class="selectBox">
+            <input
+              type="checkbox"
+              id="largeLand"
+              name="largeLand"
+              value="largeLand"
+            />
+            <label for="largeLand">4x4</label>
+          </div>
+          <div class="selectBox">
+            <input
+              type="checkbox"
+              id="xLargeLand"
+              name="xLargeLand"
+              value="xLargeLand"
+            />
+            <label for="xLargeLand">8x8</label>
+          </div>
+        </div>
+        <div>
+          <button id="mint">Mint</button>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    // connect
+    const connectBtn = document.querySelector(".connectBtn");
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const signer = provider.getSigner()
+
+    $('.connectBtn').click(function(event) {
+      console.log(event);
+    })
+  </script>
 
   <script>
     // Hilbert Spec
