@@ -1,14 +1,29 @@
 <head>
   <!-- <script src='//unpkg.com/hilbert-chart'></script> -->
   <script src='../../dist/hilbert-chart.js'></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
     body {
+      width: 100vw;
       margin: 0;
       text-align: center;
     }
 
-    #chart { display: inline-block; }
+    #content {
+      width: 100%;
+      display: flex;
+    }
+
+    #chart {
+      width: 69%;
+      display: inline-block;
+      flex: 1 2 0;
+    }
+    #web3 {
+      width: 30%;
+      flex: 1 1 0;
+      background: #3A5894;
+    }
   </style>
   <style>
     svg path {
@@ -39,10 +54,14 @@
     </style>
 </head>
 <body>
-  <div id='chart'></div>
+  <div id="content">
+    <div id='chart'></div>
+    <div id='web3'></div>
+  </div>
 
   <script>
     // Hulbert Spec
+    const canvaseWidthRate = 0.63;
     const hilbertOrder = 3;
     const hilbertLength = Math.pow(4, hilbertOrder);
 
@@ -74,7 +93,8 @@
 
     const initHilbertChart = 
       HilbertChart()
-        .margin(50)
+        .width(window.screen.width * canvaseWidthRate)
+        .margin(30)
         .hilbertOrder(hilbertOrder)
         .data(hilbertData)
         .rangePadding(0.3)
@@ -88,6 +108,17 @@
         // })
         // .rangeTooltipContent(({ name, val }) => `<b>${name}</b>: ${val} (${Math.round(val / dataSum * 100)}%)`);
 
-    initHilbertChart(chartElement);
+    const target = initHilbertChart(chartElement);
+    console.log({
+      target
+    })
+    listenScreenSizeChange();
+    function listenScreenSizeChange() {
+      const func = _.debounce((ev) => {
+        console.log(ev.target.screen.width)
+        target.width(ev.target.screen.width * canvaseWidthRate);
+      }, 500)
+      window.addEventListener('resize', func);
+    }
   </script>
 </body>
