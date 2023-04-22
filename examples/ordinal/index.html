@@ -175,12 +175,15 @@
     const hilbertLength = Math.pow(4, hilbertOrder);
 
     // Gen random data
-    const N_CAT = 64; // Math.pow(2, hilbertOrder);
+    const N_CAT = 64 - 4// Math.pow(2, hilbertOrder);
     const MAX_VAL = 100;
     const data = [...Array(N_CAT)].map((_, i) => ({
       name: `${i}`,
       val: 1,
-    }));
+    })).concat([{
+      name: `${N_CAT+1}`,
+      val: 4,
+    }]);
 
     const dataSum = data
       .map(({ val }) => val)
@@ -194,6 +197,7 @@
         length: val, // getHilbertVal(val),
         val,
         ...rest,
+        hi: '123',
       };
       carry += d.length;
       return d;
@@ -220,11 +224,12 @@
     listenScreenSizeChange();
     function listenScreenSizeChange() {
       const resizeContent = _.debounce((ev) => {
-        const width = ev.target.screen.width * canvaseWidthRate;
-        const height = ev.target.screen.height;
+        const width = window.innerWidth * canvaseWidthRate;
+        const height = window.screen.height;
         const size = Math.min(width, height);
         target.width(size);
-      }, 500);
+        console.log(size)
+      }, 500)
       resizeContent();
       window.addEventListener("resize", resizeContent);
     }

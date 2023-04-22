@@ -443,7 +443,6 @@ export default Kapsule({
           });
 
       // Ensure propagation of data binding into sub-elements
-      console.log('???')
       // rangePaths.select('line');
 
       // <line id="line" x1="10" y1="10" x2="90" y2="90" stroke="red" />
@@ -453,6 +452,7 @@ export default Kapsule({
 
       rangePaths = rangePaths.merge(newPaths);
 
+      const maxNums = Math.pow(Math.pow(2, state.hilbertOrder), 2);
       rangePaths.selectAll('line')
         .attr('x1', d => {
           if(d.vec === 'U' || d.vec === 'D') {
@@ -484,7 +484,13 @@ export default Kapsule({
               break;
           }
         })
-        .style('stroke', 'red');
+        .style('stroke', d => {
+          const index = d.start + d.val;
+          if(index === maxNums) {
+            return 'transparent';
+          }
+          return 'red';
+        });
 
       rangePaths.selectAll('path') //.transition()
         .attr('d', d => getHilbertPath(d.pathVertices))

@@ -90,7 +90,10 @@ export default function() {
       range.pathVertices = d.pathVertices;
       range.vec = d.vec;
 
-      return hilbertLayout;
+      return {
+        ...range,
+        ...d,
+      };
   };
 
   hilbertLayout.getValAtXY = function(x, y) {
@@ -136,12 +139,6 @@ export default function() {
       var maxPos = Math.pow(4, order);
       start = Math.min(start, maxPos);
       length = Math.min(length, maxPos - start);
-      console.log({
-        length,
-        start,
-        maxPos
-        
-      })
 
       // nSide is on a binary boundary 2^0, 2^1, 2^2, ...
       var nSide = Math.pow(2, order),
@@ -181,7 +178,6 @@ export default function() {
                     : 'U'
                 )
             );
-
       return {
           cellWidth: cellWidth,
           startCell: startCell,
