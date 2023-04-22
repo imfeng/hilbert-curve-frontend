@@ -623,5 +623,51 @@
       return hIndex;
     }
 
+    function convertTwoDimensionToHilbert(twoDarr) {
+      if(!twoDarr) throw new Error('No 2D array');
+      if(!state.currentNode) throw new Error('No current node');
+
+      const arr = [];
+      twoDarr.forEach((row, rowIdx) => {
+        row.forEach((rgb, colIdx) => {
+          const offset = xy2hIndex(colIdx, rowIdx, hilbertOrder);
+          const hIndex = state.currentNode.start + offset;
+          const [r, g, b] = rgb;
+          arr.push({
+            hIndex,
+            r, g, b,
+          });
+        })
+      });
+      return arr.sort((a, b) => a.hIndex - b.hIndex);
+    }
+
+    function convertUint32TwoDimensionArrayToBytes(array) {
+      const bytes = [];
+      array.forEach(row => {
+        row.forEach(uint32 => {
+          const r = uint32 & 0xff;
+          const g = (uint32 >> 8) & 0xff;
+          const b = (uint32 >> 16) & 0xff;
+          bytes.push(r);
+          bytes.push(g);
+          bytes.push(b);
+        })
+      });
+      return bytes;
+    }
+
+    function rgbArray2DToBuffer(hArray) {
+      const flattenedArray = [];
+      hArray.forEach(item => {
+        const {r, g, b} = item;
+        flattenedArray.push(r);
+        flattenedArray.push(g);
+        flattenedArray.push(b);
+      });
+
+      // return Buffer.from(flattenedArray);
+      return new Uint8Array(flattenedArray);
+    }
   </script>
 </body>
