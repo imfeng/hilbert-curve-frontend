@@ -32,7 +32,7 @@
     #web3 {
       width: 30%;
       flex: 1 1 0;
-      background: #3a5894;
+      /* background: #3a5894; */
     }
   </style>
   <style>
@@ -75,13 +75,14 @@
       color: white;
       border: none;
       padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 1.5rem;
+      border-radius: 15px;
+      font-size: 1.2rem;
+      font-weight: 600;
       cursor: pointer;
     }
     .connectBtn:hover {
-      background-color: white;
-      color: gray;
+      background-color: black;
+      color: white;
     }
     .boxGroup {
       display: flex;
@@ -96,9 +97,28 @@
       justify-content: center;
       align-items: center;
       margin: 10px;
+      font-size: 1.5rem;
+      font-weight: 600;
     }
     .selectBox input {
       margin: 0 5px;
+    }
+    .checkbox {
+      width: 30px;
+      height: 30px;
+    }
+    .mintBtn {
+      background-color: gray;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 15px;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .mintBtn:hover {
+      background-color: black;
+      color: white;
     }
   </style>
 </head>
@@ -113,6 +133,7 @@
         <div class="boxGroup">
           <div class="selectBox">
             <input
+              class="checkbox"
               type="checkbox"
               id="smallLand"
               name="smallLand"
@@ -123,6 +144,7 @@
           </div>
           <div class="selectBox">
             <input
+              class="checkbox"
               type="checkbox"
               id="mediumLand"
               name="mediumLand"
@@ -132,6 +154,7 @@
           </div>
           <div class="selectBox">
             <input
+              class="checkbox"
               type="checkbox"
               id="largeLand"
               name="largeLand"
@@ -141,6 +164,7 @@
           </div>
           <div class="selectBox">
             <input
+              class="checkbox"
               type="checkbox"
               id="xLargeLand"
               name="xLargeLand"
@@ -150,7 +174,7 @@
           </div>
         </div>
         <div>
-          <button id="mint">Mint</button>
+          <button class="mintBtn" id="mint">Mint</button>
         </div>
       </div>
     </div>
@@ -160,12 +184,20 @@
     // connect
     const connectBtn = document.querySelector(".connectBtn");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    const signer = provider.getSigner()
 
-    $('.connectBtn').click(function(event) {
-      console.log(event);
-    })
+    $(".connectBtn").click(async function (event) {
+      await provider.send("eth_requestAccounts", []);
+      await delay(1000);
+      const signer = provider.getSigner();
+      let addr = await signer.getAddress();
+      addr = addr.slice(0, 6) + "..." + addr.slice(-4);
+
+      $(".connectBtn").text(addr);
+    });
+
+    function delay(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
   </script>
 
   <script>
@@ -175,15 +207,19 @@
     const hilbertLength = Math.pow(4, hilbertOrder);
 
     // Gen random data
-    const N_CAT = 64 - 4// Math.pow(2, hilbertOrder);
+    const N_CAT = 64 - 4; // Math.pow(2, hilbertOrder);
     const MAX_VAL = 100;
-    const data = [...Array(N_CAT)].map((_, i) => ({
-      name: `${i}`,
-      val: 1,
-    })).concat([{
-      name: `${N_CAT+1}`,
-      val: 4,
-    }]);
+    const data = [...Array(N_CAT)]
+      .map((_, i) => ({
+        name: `${i}`,
+        val: 1,
+      }))
+      .concat([
+        {
+          name: `${N_CAT + 1}`,
+          val: 4,
+        },
+      ]);
 
     const dataSum = data
       .map(({ val }) => val)
@@ -197,7 +233,7 @@
         length: val, // getHilbertVal(val),
         val,
         ...rest,
-        hi: '123',
+        hi: "123",
       };
       carry += d.length;
       return d;
@@ -228,8 +264,8 @@
         const height = window.screen.height;
         const size = Math.min(width, height);
         target.width(size);
-        console.log(size)
-      }, 500)
+        console.log(size);
+      }, 500);
       resizeContent();
       window.addEventListener("resize", resizeContent);
     }
