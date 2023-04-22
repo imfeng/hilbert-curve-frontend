@@ -360,11 +360,6 @@
         "internalType": "enum HilbertMap.Size",
         "name": "size",
         "type": "uint8"
-      },
-      {
-        "internalType": "string",
-        "name": "uri",
-        "type": "string"
       }
     ],
     "name": "mintBuilding",
@@ -496,6 +491,19 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "baseUrl",
+        "type": "string"
+      }
+    ],
+    "name": "setBaseUrl",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes4",
         "name": "interfaceId",
         "type": "bytes4"
@@ -539,6 +547,35 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenIdToMetadata",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "hIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum HilbertMap.Quadrant",
+        "name": "quadrant",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum HilbertMap.Size",
+        "name": "size",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
