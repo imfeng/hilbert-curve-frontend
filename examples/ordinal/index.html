@@ -61,25 +61,29 @@
 <body>
   <div id="content">
     <div id="chart"></div>
+    <div id="chart-container">
+      <button onclick="showLine()">toggle Lines</button>
+    </div>
     <div id="web3"></div>
   </div>
 
   <script>
     // Hilbert Spec
     const canvaseWidthRate = 0.63;
-    const hilbertOrder = 3;
+    const hilbertOrder = 4;
     const hilbertLength = Math.pow(4, hilbertOrder);
 
     // Gen random data
-    const N_CAT = 64 - 4// Math.pow(2, hilbertOrder);
+    const N_CAT = Math.pow(Math.pow(2, hilbertOrder), 2);
     const MAX_VAL = 100;
     const data = [...Array(N_CAT)].map((_, i) => ({
       name: `${i}`,
       val: 1,
-    })).concat([{
-      name: `${N_CAT+1}`,
-      val: 4,
-    }]);
+    }))
+    // .concat([{
+    //   name: `${N_CAT+1}`,
+    //   val: 4,
+    // }]);
 
     const dataSum = data
       .map(({ val }) => val)
@@ -93,7 +97,7 @@
         length: val, // getHilbertVal(val),
         val,
         ...rest,
-        hi: '123',
+        img: '/11.jpeg',
       };
       carry += d.length;
       return d;
@@ -108,8 +112,34 @@
       .rangePadding(0.3)
       // .valFormatter(n => Math.round(n / hilbertLength * dataSum))
       .showValTooltip(true)
-      .onRangeClick((d) => {
+      .onRangeClick(function (d) {
         console.log("click", d);
+        console.log(this)
+        // target.addActiveNode(d.start);
+        const size = 1;
+        const sizeLength = Math.pow(Math.pow(2, size), 2);
+        const leadNodes = getLeadNodes(d.start, hilbertOrder);
+        const leadNode = parseInt(leadNodes[size]);
+        const nodes = new Array(sizeLength).fill(leadNode).map((v, i) => v + i)
+        const resultMap = nodes.reduce((acc, v) => {
+          acc[v] = true;
+          return acc;
+        }, {})
+        console.log({
+          size,
+          sizeLength,
+          leadNodes,
+          nodes,
+          resultMap,
+        })
+        target.activeMap(resultMap);
+        // target.activeMap({
+        //   ...target.activeMap(),
+        //   [d.start]: true
+        // });
+      
+
+        
       });
     // .onRangeHover((d) => {
     //   console.log('hover', d);
@@ -117,17 +147,43 @@
     // .rangeTooltipContent(({ name, val }) => `<b>${name}</b>: ${val} (${Math.round(val / dataSum * 100)}%)`);
 
     const target = initHilbertChart(chartElement);
+    console.log({target})
+
+    const resizeContent = _.debounce((ev) => {
+      const width = window.innerWidth * canvaseWidthRate;
+      const height = window.screen.height;
+      const size = Math.min(width, height);
+      target.width(size);
+      console.log(size)
+    }, 500)
     listenScreenSizeChange();
     function listenScreenSizeChange() {
-      const resizeContent = _.debounce((ev) => {
-        const width = window.innerWidth * canvaseWidthRate;
-        const height = window.screen.height;
-        const size = Math.min(width, height);
-        target.width(size);
-        console.log(size)
-      }, 500)
       resizeContent();
       window.addEventListener("resize", resizeContent);
     }
+
+    function showLine() {
+      target.toggleLinepaths();
+      resizeContent();
+    }
+
+
+
+  function getLeadNodes(hIndex, n) {
+    const MAX_UINT256 = BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+    const N = n + 1;
+    let leadNodes = []
+    let mask = MAX_UINT256;
+    leadNodes.push(hIndex.toString());
+    for (let i = 1; i < N; i++) {
+      // Shift 2 bits to get the next lead node
+      mask = mask << 2n;
+      const leadNode = BigInt(hIndex) & mask;
+      leadNodes.push(leadNode.toString());
+      // The last lead node is 0
+      if (leadNode === 0n) break;
+    }
+    return leadNodes.map(v => v.toString());
+  }
   </script>
 </body>
