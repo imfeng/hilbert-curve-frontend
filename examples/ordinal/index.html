@@ -1,4 +1,5 @@
 <head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
   <!-- <script src='//unpkg.com/hilbert-chart'></script> -->
   <script src="../../dist/hilbert-chart.js"></script>
   <script
@@ -6,6 +7,10 @@
     integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
+  ></script>
+  <script
+    src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+    type="application/javascript"
   ></script>
   <style>
     body {
@@ -27,7 +32,7 @@
     #web3 {
       width: 30%;
       flex: 1 1 0;
-      background: #3a5894;
+      /* background: #3a5894; */
     }
   </style>
   <style>
@@ -57,6 +62,65 @@
       pointer-events: none;
     }
   </style>
+  <style>
+    .connectBox {
+      display: flex;
+      flex-direction: row;
+      justify-content: right;
+      align-items: center;
+      margin: 1.5rem;
+    }
+    .connectBtn {
+      background-color: gray;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 15px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .connectBtn:hover {
+      background-color: black;
+      color: white;
+    }
+    .boxGroup {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+    }
+    .selectBox {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .selectBox input {
+      margin: 0 5px;
+    }
+    .checkbox {
+      width: 30px;
+      height: 30px;
+    }
+    .mintBtn {
+      background-color: gray;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 15px;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .mintBtn:hover {
+      background-color: black;
+      color: white;
+    }
+  </style>
 </head>
 <body>
   <div id="content">
@@ -64,8 +128,80 @@
     <div id="chart-container">
       <button onclick="showLine()">toggle Lines</button>
     </div>
-    <div id="web3"></div>
+    <div id="web3">
+      <div>
+        <div class="connectBox">
+          <button class="connectBtn">connect</button>
+        </div>
+        <div class="boxGroup">
+          <div class="selectBox">
+            <input
+              class="checkbox"
+              type="checkbox"
+              id="smallLand"
+              name="smallLand"
+              value="smallLand"
+              checked
+            />
+            <label for="smallLand">1x1</label>
+          </div>
+          <div class="selectBox">
+            <input
+              class="checkbox"
+              type="checkbox"
+              id="mediumLand"
+              name="mediumLand"
+              value="mediumLand"
+            />
+            <label for="mediumLand">2x2</label>
+          </div>
+          <div class="selectBox">
+            <input
+              class="checkbox"
+              type="checkbox"
+              id="largeLand"
+              name="largeLand"
+              value="largeLand"
+            />
+            <label for="largeLand">4x4</label>
+          </div>
+          <div class="selectBox">
+            <input
+              class="checkbox"
+              type="checkbox"
+              id="xLargeLand"
+              name="xLargeLand"
+              value="xLargeLand"
+            />
+            <label for="xLargeLand">8x8</label>
+          </div>
+        </div>
+        <div>
+          <button class="mintBtn" id="mint">Mint</button>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    // connect
+    const connectBtn = document.querySelector(".connectBtn");
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    $(".connectBtn").click(async function (event) {
+      await provider.send("eth_requestAccounts", []);
+      await delay(1000);
+      const signer = provider.getSigner();
+      let addr = await signer.getAddress();
+      addr = addr.slice(0, 6) + "..." + addr.slice(-4);
+
+      $(".connectBtn").text(addr);
+    });
+
+    function delay(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+  </script>
 
   <script>
     // Hilbert Spec
@@ -80,10 +216,6 @@
       name: `${i}`,
       val: 1,
     }))
-    // .concat([{
-    //   name: `${N_CAT+1}`,
-    //   val: 4,
-    // }]);
 
     const dataSum = data
       .map(({ val }) => val)
@@ -98,6 +230,7 @@
         val,
         ...rest,
         img: '/11.jpeg',
+        hi: "123",
       };
       carry += d.length;
       return d;
