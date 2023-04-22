@@ -173,7 +173,9 @@
           </div>
         </div>
         <div>
-          <button class="mintBtn" id="mint">Mint</button>
+          <button class="mintBtn" id="mint" onclick="mintBuilding()">
+            Mint
+          </button>
         </div>
       </div>
     </div>
@@ -191,7 +193,7 @@
     const data = [...Array(N_CAT)].map((_, i) => ({
       name: `${i}`,
       val: 1,
-    }))
+    }));
 
     const dataSum = data
       .map(({ val }) => val)
@@ -205,7 +207,7 @@
         length: val, // getHilbertVal(val),
         val,
         ...rest,
-        img: '/11.jpeg',
+        img: "/11.jpeg",
         hi: "123",
       };
       carry += d.length;
@@ -214,7 +216,7 @@
     var state = {
       currentNode: null,
       size: 0,
-    }
+    };
 
     const chartElement = document.getElementById("chart");
 
@@ -232,15 +234,15 @@
     // .rangeTooltipContent(({ name, val }) => `<b>${name}</b>: ${val} (${Math.round(val / dataSum * 100)}%)`);
 
     const target = initHilbertChart(chartElement);
-    console.log({target})
+    console.log({ target });
 
     const resizeContent = _.debounce((ev) => {
       const width = window.innerWidth * canvaseWidthRate;
       const height = window.screen.height;
       const size = Math.min(width, height);
       target.width(size);
-      console.log(size)
-    }, 500)
+      console.log(size);
+    }, 500);
     listenScreenSizeChange();
     function listenScreenSizeChange() {
       resizeContent();
@@ -252,97 +254,116 @@
       resizeContent();
     }
 
-
-
-  function getLeadNodes(hIndex, n) {
-    const MAX_UINT256 = BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-    const N = n + 1;
-    let leadNodes = []
-    let mask = MAX_UINT256;
-    leadNodes.push(hIndex.toString());
-    for (let i = 1; i < N; i++) {
-      // Shift 2 bits to get the next lead node
-      mask = mask << 2n;
-      const leadNode = BigInt(hIndex) & mask;
-      leadNodes.push(leadNode.toString());
-      // The last lead node is 0
-      if (leadNode === 0n) break;
-    }
-    return leadNodes.map(v => v.toString());
-  }
-
-  function listenSizeRadioOnchange() {
-    $('input[type=radio][name=sizeItemSelector]').change(function() {
-      state.size = getCurrentSize();
-      console.log('onSizeRadioOnchange')
-      if(state.currentNode) {
-        onClickNode(state.currentNode);
+    function getLeadNodes(hIndex, n) {
+      const MAX_UINT256 = BigInt(
+        "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+      );
+      const N = n + 1;
+      let leadNodes = [];
+      let mask = MAX_UINT256;
+      leadNodes.push(hIndex.toString());
+      for (let i = 1; i < N; i++) {
+        // Shift 2 bits to get the next lead node
+        mask = mask << 2n;
+        const leadNode = BigInt(hIndex) & mask;
+        leadNodes.push(leadNode.toString());
+        // The last lead node is 0
+        if (leadNode === 0n) break;
       }
-    });
-  }
-  listenSizeRadioOnchange();
-
-  function onClickNode(d) {
-    console.log("click", d);
-    const size = getCurrentSize();
-    console.log({size})
-    const sizeLength = Math.pow(Math.pow(2, size), 2);
-    const leadNodes = getLeadNodes(d.start, hilbertOrder);
-    const leadNode = parseInt(leadNodes[size]);
-    const leadD = hilbertData[leadNode];
-    for (let index = leadD.start; index < leadD.start + sizeLength; index++) {
-      const dd = hilbertData[index];
-      if(dd.disabled) {
-        state.currentNode = null;
-        target.resetActiveNodes();
-        alert('This land is not available');
-        return;
-      }
+      return leadNodes.map((v) => v.toString());
     }
-    state.currentNode = leadD;
-    const nodes = new Array(sizeLength).fill(leadNode).map((v, i) => v + i)
-    const resultMap = nodes.reduce((acc, v) => {
-      acc[v] = true;
-      return acc;
-    }, {})
-    console.log({
-      currentNode: state.currentNode,
-      size,
-      sizeLength,
-      leadNodes,
-      nodes,
-      resultMap,
-    })
-    target.activeMap(resultMap);
-  }
 
-  function getCurrentSize() {
-    return parseInt($('input[type=radio][name=sizeItemSelector]:checked').val());
-  }
-  
+    function listenSizeRadioOnchange() {
+      $("input[type=radio][name=sizeItemSelector]").change(function () {
+        state.size = getCurrentSize();
+        console.log("onSizeRadioOnchange");
+        if (state.currentNode) {
+          onClickNode(state.currentNode);
+        }
+      });
+    }
+    listenSizeRadioOnchange();
+
+    function onClickNode(d) {
+      console.log("click", d);
+      const size = getCurrentSize();
+      console.log({ size });
+      const sizeLength = Math.pow(Math.pow(2, size), 2);
+      const leadNodes = getLeadNodes(d.start, hilbertOrder);
+      const leadNode = parseInt(leadNodes[size]);
+      const leadD = hilbertData[leadNode];
+      for (let index = leadD.start; index < leadD.start + sizeLength; index++) {
+        const dd = hilbertData[index];
+        if (dd.disabled) {
+          state.currentNode = null;
+          target.resetActiveNodes();
+          alert("This land is not available");
+          return;
+        }
+      }
+      state.currentNode = leadD;
+      const nodes = new Array(sizeLength).fill(leadNode).map((v, i) => v + i);
+      const resultMap = nodes.reduce((acc, v) => {
+        acc[v] = true;
+        return acc;
+      }, {});
+      console.log({
+        currentNode: state.currentNode,
+        size,
+        sizeLength,
+        leadNodes,
+        nodes,
+        resultMap,
+      });
+      target.activeMap(resultMap);
+    }
+
+    function getCurrentSize() {
+      return parseInt(
+        $("input[type=radio][name=sizeItemSelector]:checked").val()
+      );
+    }
   </script>
 
   <script>
     // connect
+    const unitPrice = ethers.utils.parseEther("0.001");
     const connectBtn = document.querySelector(".connectBtn");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
+    var web3State = {
+      addr: null,
+      contract: null,
+    };
 
     $(".connectBtn").click(async function (event) {
       await provider.send("eth_requestAccounts", []);
       await delay(1000);
       const signer = provider.getSigner();
-      let addr = await signer.getAddress();
-      addr = addr.slice(0, 6) + "..." + addr.slice(-4);
-      
-      $(".connectBtn").text(addr);
+      const addr = await signer.getAddress();
+      web3State.addr = addr;
+
+      $(".connectBtn").text(addr.slice(0, 6) + "..." + addr.slice(-4));
 
       const abi = await getABI();
-      const contract = new ethers.Contract(
-        "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      web3State.contract = new ethers.Contract(
+        "0x112559F00408984CE1c8a7B6D844A61662182FA6",
         abi,
-        provider
+        signer
       );
     });
+
+    async function mintBuilding() {
+      const { addr, contract } = web3State;
+      const hIndex = state.currentNode.start;
+      const quadrant = 1;
+      const size = getCurrentSize();
+      const price = unitPrice.mul(Math.pow(2, size));
+      const tx = await contract.mintBuilding(hIndex, quadrant, size, {
+        value: price,
+        from: addr,
+      });
+      console.log({ tx });
+    }
 
     function delay(ms) {
       return new Promise((resolve) => setTimeout(resolve, ms));
@@ -352,7 +373,5 @@
       const abi = await $.getJSON("./abi/abi.json");
       return abi;
     }
-    
   </script>
-
 </body>
