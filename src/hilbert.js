@@ -163,8 +163,10 @@ export default Kapsule({
     },
     toggleLinepaths(state) {
       state.showLinepaths = !state.showLinepaths;
-      // console.log(state)
-      // this.update();
+      return this;
+    },
+    toggleOriginal(state) {
+      state.showOriginal = !state.showOriginal;
       return this;
     },
     addActiveNode(state, hIndex) {
@@ -183,6 +185,7 @@ export default Kapsule({
 
   stateInit() {
     return {
+      showOriginal: false,
       showLinepaths: false,
       hilbert: d3Hilbert().simplifyCurves(true),
       defaultColorScale: d3ScaleOrdinal(d3SchemePaired),
@@ -546,7 +549,9 @@ export default Kapsule({
       rangePaths = rangePaths.merge(newPaths);
 
       const getColor = (d) => {
-        return d.color;
+        if(state.showOriginal) {
+          return d.color;
+        }
         if(d.isDisabled) {
           return 'grey';
         }
@@ -555,6 +560,9 @@ export default Kapsule({
         }
         if(state.activeMap[d.start] && state.isSelectedError) {
           return 'red';
+        }
+        if(state.activeMap[d.start] && d.color) {
+          return d.color;
         }
         return state.activeMap[d.start] ? '#3ff341' : '#c1c1c1'
       };

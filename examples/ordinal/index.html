@@ -100,6 +100,7 @@
       justify-content: center;
       align-items: center;
       margin: 10px;
+      flex-wrap: wrap;
     }
     .selectBox {
       display: flex;
@@ -130,6 +131,10 @@
       background-color: black;
       color: white;
     }
+
+    #chart-container button {
+      margin: 1rem auto;
+    }
   </style>
 </head>
 <body>
@@ -137,6 +142,9 @@
     <div id="chart"></div>
     <div id="chart-container">
       <button onclick="showLine()">toggle Lines</button>
+      <button onclick="showOriginal()">toggle Picture</button>
+      <button onclick="rotate90DegreesClockwise()">rotate pic</button>
+      <button onclick="reset()">reset</button>
     </div>
     <div id="web3">
       <div>
@@ -181,6 +189,24 @@
             />
             <label for="xLargeLand">8x8</label>
           </div>
+          <div class="selectBox">
+            <input
+              class="sizeItemSelector"
+              type="radio"
+              name="sizeItemSelector"
+              value="4"
+            />
+            <label for="xLargeLand">16x16</label>
+          </div>
+          <div class="selectBox">
+            <input
+              class="sizeItemSelector"
+              type="radio"
+              name="sizeItemSelector"
+              value="5"
+            />
+            <label for="xLargeLand">32x32</label>
+          </div>
         </div>
         <div>
           <button class="mintBtn" id="mint" onclick="mintBuilding()">
@@ -200,7 +226,7 @@
     const ERROR_COLOR = "red";
     // Hilbert Spec
     const canvaseWidthRate = 0.63;
-    const hilbertOrder = 5;
+    const hilbertOrder = 6;
     const hilbertLength = Math.pow(4, hilbertOrder);
 
     // Gen random data
@@ -228,7 +254,6 @@
         img: "/11.jpeg",
         hi: "123",
         isDisabled: false,
-        color: NORMAL_COLOR,
       };
       carry += d.length;
       return d;
@@ -236,6 +261,7 @@
     var state = {
       currentNode: null,
       size: 0,
+      curreuntPic2DArray: null,
     };
 
     const chartElement = document.getElementById("chart");
@@ -274,6 +300,11 @@
       resizeContent();
     }
 
+    function showOriginal() {
+      target.toggleOriginal();
+      resizeContent();
+    }
+
     function getRandomBoolean() {
       return Math.random() >= 0.8;
     }
@@ -301,6 +332,9 @@
       $("input[type=radio][name=sizeItemSelector]").change(function () {
         state.size = getCurrentSize();
         console.log("onSizeRadioOnchange");
+        state.curreuntPic2DArray = null;
+        document.getElementById("imageInput").value = "";
+
         if (state.currentNode) {
           onClickNode(state.currentNode);
         }
@@ -476,7 +510,7 @@
         const image = new Image();
         image.src = URL.createObjectURL(file);
         image.onload = () => {
-          const dimension = 32;
+          const dimension = Math.pow(2, getCurrentSize());
 
           const canvas = document.createElement('canvas');
           canvas.width = dimension;
@@ -498,22 +532,43 @@
             }
             rgbArray2D.push(rowData);
           }
-          console.log(rgbArray2D)
-          const hilbert = target.hilbert();
-          rgbArray2D.forEach((row, rowIdx) => {
-            row.forEach((rgb, colIdx) => {
-              const hIndex = xy2hIndex(colIdx, rowIdx, hilbertOrder);
-              const [r, g, b] = rgb;
-              hilbertData[hIndex].color = `rgb(${r}, ${g}, ${b})`;
-            })
-          });
-          resizeContent();
+          state.curreuntPic2DArray = rgbArray2D;
+          refreshPicInHilbert();
 
           console.log('RGB array length:', rgbArray2D.length); // Output: 65536 (256 * 256)
         };
       });
     }
     listenImage();
+
+    function refreshPicInHilbert() {
+      if(!state.curreuntPic2DArray) return;
+      state.curreuntPic2DArray.forEach((row, rowIdx) => {
+        row.forEach((rgb, colIdx) => {
+          const hIndex = xy2hIndex(colIdx, rowIdx, hilbertOrder);
+          
+          const [r, g, b] = rgb;
+          hilbertData[state.currentNode.start + hIndex].color = `rgb(${r}, ${g}, ${b})`;
+        })
+      });
+      resizeContent();
+    }
+
+    function rotate90DegreesClockwise() {
+      if(!state.curreuntPic2DArray) return;
+      const dimension = state.curreuntPic2DArray.length;
+      const rotatedArray = new Array(dimension).fill(null).map(() => new Array(dimension).fill(null));
+
+      for (let row = 0; row < dimension; row++) {
+        for (let col = 0; col < dimension; col++) {
+          rotatedArray[col][dimension - 1 - row] = state.curreuntPic2DArray[row][col];
+        }
+      }
+      state.curreuntPic2DArray = rotatedArray;
+      refreshPicInHilbert();
+
+      return rotatedArray;
+    }
 
     function xy2hIndex(x, y, n) {
       if (n > 128) throw new Error("OrderMustBeLessThan128: " + n);
