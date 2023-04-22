@@ -15,6 +15,7 @@ const N_TICKS = Math.pow(2, 3); // Force place ticks on bit boundaries
 
 export default Kapsule({
   props: {
+    isSelectedError: { default: false, triggerUpdate: true },
     width: {},
     margin: { default: 90 },
     hilbertOrder: { default: 4 }, // 0-255 default
@@ -451,7 +452,7 @@ export default Kapsule({
             if(index === maxNums) {
               return 'transparent';
             }
-            return 'red';
+            return floatRateToRgb(d.start / maxNums);
           });
         pathlinePaths.selectAll('path') //.transition()
           .attr('d', d => getHilbertPath(d.pathVertices))
@@ -542,8 +543,15 @@ export default Kapsule({
       rangePaths = rangePaths.merge(newPaths);
 
       const getColor = (d) => {
+        // return d.color;
         if(d.isDisabled) {
           return 'grey';
+        }
+        if(d.isDisabled && state.activeMap[d.start]) {
+          return 'red';
+        }
+        if(state.activeMap[d.start] && state.isSelectedError) {
+          return 'red';
         }
         return state.activeMap[d.start] ? '#3ff341' : '#c1c1c1'
       };
@@ -724,4 +732,74 @@ function getLeadNodes(hIndex, n) {
     if (leadNode === 0n) break;
   }
   return leadNodes.map(v => v.toString());
+}
+
+function floatRateToRgb(floatRate) {
+  return `hsl(${Math.round(floatRate * 360)}, 100%, 50%)`;
+}
+
+function hslToRgb(h, s, l) {
+  let r, g, b;
+
+  if (s == 0) {
+    r = g = b = l; // achromatic
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    }
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+
+  return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+}
+
+function floatRateToRgbV2(floatRate) {
+  let r, g, b;
+
+  if (floatRate <= 0.5) {
+    const t = floatRate * 2; // Normalize the float rate to [0, 1] range
+    r = Math.floor(255 * (1 - t));
+    g = Math.floor(255 * t);
+    b = 0;
+  } else {
+    const t = (floatRate - 0.5) * 2; // Normalize the float rate to [0, 1] range
+    r = 0;
+    g = Math.floor(255 * (1 - t));
+    b = Math.floor(255 * t);
+  }
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function floatRateToRgbV3(floatRate) {
+  let r, g, b;
+
+  if (floatRate <= 1 / 3) {
+    const t = floatRate * 3; // Normalize the float rate to [0, 1] range
+    r = Math.floor(255 * (1 - t) + 128 * t);
+    g = Math.floor(128 * t);
+    b = 0;
+  } else if (floatRate <= 2 / 3) {
+    const t = (floatRate - 1 / 3) * 3; // Normalize the float rate to [0, 1] range
+    r = Math.floor(128 * (1 - t));
+    g = Math.floor(128 * t);
+    b = Math.floor(128 * t);
+  } else {
+    const t = (floatRate - 2 / 3) * 3; // Normalize the float rate to [0, 1] range
+    r = 0;
+    g = Math.floor(128 * (1 - t));
+    b = Math.floor(128 * (1 - t) + 255 * t);
+  }
+
+  return `rgb(${r}, ${g}, ${b})`;
 }

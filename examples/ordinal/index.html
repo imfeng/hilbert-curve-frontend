@@ -192,6 +192,11 @@
   </div>
 
   <script>
+    const NORMAL_COLOR = "#c1c1c1";
+    const MINTED_COLOR = "grey";
+    const SELECTED_COLOR = "#3ff341";
+    const WARN_COLOR = "#fff623";
+    const ERROR_COLOR = "red";
     // Hilbert Spec
     const canvaseWidthRate = 0.63;
     const hilbertOrder = 5;
@@ -221,6 +226,7 @@
         img: "/11.jpeg",
         hi: "123",
         isDisabled: false,
+        color: NORMAL_COLOR,
       };
       carry += d.length;
       return d;
@@ -307,17 +313,21 @@
         const leadNodes = getLeadNodes(d.start, hilbertOrder);
         const leadNode = parseInt(leadNodes[size]);
         const leadD = hilbertData[leadNode];
+        let isSelectedError = false;
         for (let index = leadD.start; index < leadD.start + sizeLength; index++) {
             const dd = hilbertData[index];
             if (dd.isDisabled) {
-                state.currentNode = null;
-                target.resetActiveNodes();
-                resizeContent();
-                alert('This nodes is not available');
-                return;
+                // state.currentNode = null;
+                isSelectedError = true;
+                // target.resetActiveNodes();
+                // resizeContent();
+                target.isSelectedError(isSelectedError);
+                alert('This area is not available!');
+                break;
             }
         }
         state.currentNode = leadD;
+        target.isSelectedError(isSelectedError);
         const nodes = new Array(sizeLength)
             .fill(leadNode)
             .map((v, i) => v + i);
@@ -378,11 +388,23 @@
         alert("Please connect wallet first");
         return;
       }
+      if(target.isSelectedError()) {
+        alert("This area is not available!");
+        return;
+      }
       const { addr, contract } = web3State;
       const hIndex = state.currentNode.start;
       const quadrant = 1;
       const size = getCurrentSize();
-      const price = unitPrice.mul(Math.pow(2, size));
+      const sizeLength = Math.pow(Math.pow(2, size), 2);
+      const price = unitPrice.mul(sizeLength);
+      console.log({
+        hIndex,
+        quadrant,
+        size,
+        price: price.toString(10),
+        addr,
+      })
       const tx = await contract.mintBuilding(hIndex, quadrant, size, {
         value: price,
         from: addr,
