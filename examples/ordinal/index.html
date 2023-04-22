@@ -48,6 +48,16 @@
       stroke-width: 0.1;
     }
 
+    svg .pathline-segment {
+      -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+      -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none;
+      pointer-events: none;
+    }
+
     #val-tooltip {
       display: none;
       position: absolute;
@@ -200,6 +210,7 @@
 
     let carry = 0;
     const hilbertData = data.map(({ val, ...rest }) => {
+      const isDisabled = getRandomBoolean();
       const d = {
         start: carry,
         length: val, // getHilbertVal(val),
@@ -207,6 +218,7 @@
         ...rest,
         img: '/11.jpeg',
         hi: "123",
+        isDisabled,
       };
       carry += d.length;
       return d;
@@ -252,6 +264,9 @@
       resizeContent();
     }
 
+    function getRandomBoolean() {
+      return Math.random() >= 0.8;
+    }
 
 
   function getLeadNodes(hIndex, n) {
@@ -292,10 +307,11 @@
     const leadD = hilbertData[leadNode];
     for (let index = leadD.start; index < leadD.start + sizeLength; index++) {
       const dd = hilbertData[index];
-      if(dd.disabled) {
+      if(dd.isDisabled) {
         state.currentNode = null;
         target.resetActiveNodes();
-        alert('This land is not available');
+        resizeContent();
+        alert('This nodes is not available');
         return;
       }
     }
@@ -353,6 +369,7 @@
       return abi;
     }
     
+
   </script>
 
 </body>

@@ -541,7 +541,12 @@ export default Kapsule({
 
       rangePaths = rangePaths.merge(newPaths);
 
-      const getColor = (d) => state.activeMap[d.start] ? '#3ff341' : '#c1c1c1';
+      const getColor = (d) => {
+        if(d.isDisabled) {
+          return 'grey';
+        }
+        return state.activeMap[d.start] ? '#3ff341' : '#c1c1c1'
+      };
       rangePaths.selectAll('path') //.transition()
         .attr('d', d => getHilbertPath(d.pathVertices))
         .style('stroke', getColor) // colorAccessor, background Color
