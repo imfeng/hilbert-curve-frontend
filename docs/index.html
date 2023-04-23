@@ -256,7 +256,7 @@
           <button class="btn" onclick="rotate90DegreesClockwise()">
             rotate pic
           </button>
-          <button onclick="resetCanvas()">reset</button>
+          <button class="btn" onclick="resetCanvas()">reset</button>
         </div>
       </div>
     </div>
@@ -544,6 +544,9 @@
     }
 
     function tokenURI2Json(tokenURI) {
+      console.log({
+        tokenURI,
+      })
       const base64 = tokenURI.replace("data:application/json;base64,", "");
       const json = atob(base64);
       return JSON.parse(json);
