@@ -21,12 +21,12 @@ export default [
     output: [
       { // umd
         ...umdConf,
-        file: `dist/${name}.js`,
+        file: `docs/dist/${name}.js`,
         sourcemap: true,
       },
       { // minify
         ...umdConf,
-        file: `dist/${name}.min.js`,
+        file: `docs/dist/${name}.min.js`,
         plugins: [terser({
           output: { comments: '/Version/' }
         })]
@@ -45,7 +45,7 @@ export default [
       {
         format: 'es',
         strict: false,
-        file: `dist/${name}.mjs`
+        file: `docs/dist/${name}.mjs`
       }
     ],
     external: [...Object.keys(dependencies || {}), ...Object.keys(peerDependencies || {})],
@@ -57,7 +57,7 @@ export default [
   { // expose TS declarations
     input: 'src/index.d.ts',
     output: [{
-      file: `dist/${name}.d.ts`,
+      file: `docs/dist/${name}.d.ts`,
       format: 'es'
     }],
     plugins: [dts()]
@@ -70,7 +70,7 @@ export default [
         name: 'D3Hilbert',
         strict: false,
         sourcemap: true,
-        file: `dist/d3-hilbert.js`
+        file: `docs/dist/d3-hilbert.js`
       }
     ],
     plugins: [
