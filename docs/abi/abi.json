@@ -368,6 +368,34 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "hIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum HilbertMap.Quadrant",
+        "name": "quadrant",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum HilbertMap.Size",
+        "name": "size",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "colors",
+        "type": "bytes[]"
+      }
+    ],
+    "name": "mintBuildingWithColors",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "name",
     "outputs": [
@@ -669,6 +697,13 @@
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

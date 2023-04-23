@@ -52,9 +52,9 @@
       -webkit-touch-callout: none; /* iOS Safari */
       -webkit-user-select: none; /* Safari */
       -khtml-user-select: none; /* Konqueror HTML */
-        -moz-user-select: none; /* Old versions of Firefox */
-          -ms-user-select: none; /* Internet Explorer/Edge */
-              user-select: none;
+      -moz-user-select: none; /* Old versions of Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+      user-select: none;
       pointer-events: none;
     }
 
@@ -81,7 +81,7 @@
       margin: 1.5rem;
     }
     .connectBtn {
-      background-color: gray;
+      background-color: #ff0000bb;
       color: white;
       border: none;
       padding: 10px 20px;
@@ -91,7 +91,7 @@
       cursor: pointer;
     }
     .connectBtn:hover {
-      background-color: black;
+      background-color: #ff0000;
       color: white;
     }
     .boxGroup {
@@ -108,7 +108,7 @@
       justify-content: center;
       align-items: center;
       margin: 10px;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       font-weight: 600;
     }
     .selectBox input {
@@ -119,21 +119,47 @@
       height: 30px;
     }
     .mintBtn {
-      background-color: gray;
+      background-color: #0000ff9b;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 15px;
+      margin: 10px;
+      padding: 8px 30px;
+      border-radius: 10px;
       font-size: 1.2rem;
       cursor: pointer;
     }
     .mintBtn:hover {
-      background-color: black;
+      background-color: #0000ff;
+      color: white;
+    }
+
+    .btnGroup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 50px;
+    }
+
+    .btn {
+      background-color: rgba(116, 116, 116, 0.644);
+      color: white;
+      border: none;
+      padding: 6px 15px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: rgba(116, 116, 116, 0.9);
       color: white;
     }
 
     #chart-container button {
-      margin: 1rem auto;
+      margin: 0.5rem;
+      display: inline-block;
+      width: 80%;
+      text-align: center;
     }
   </style>
   <style>
@@ -213,7 +239,7 @@
             <label for="xLargeLand">32x32</label>
           </div>
           <div class="file">
-            <input type="file" id="imageInput" accept="image/*">
+            <input type="file" id="imageInput" accept="image/*" />
           </div>
         </div>
         <div>
@@ -224,10 +250,14 @@
       </div>
 
       <div id="chart-container">
-        <button onclick="showLine()">toggle Lines</button>
-        <button onclick="showOriginal()">toggle Picture</button>
-        <button onclick="rotate90DegreesClockwise()">rotate pic</button>
-        <button onclick="resetCanvas()">reset</button>
+        <div class="btnGroup">
+          <button class="btn" onclick="showLine()">toggle Lines</button>
+          <button class="btn" onclick="showOriginal()">toggle Picture</button>
+          <button class="btn" onclick="rotate90DegreesClockwise()">
+            rotate pic
+          </button>
+          <button onclick="resetCanvas()">reset</button>
+        </div>
       </div>
     </div>
   </div>
@@ -250,7 +280,7 @@
       name: `${i}`,
       val: 1,
     }));
-    console.log({dataLength: data.length})
+    console.log({ dataLength: data.length });
 
     const dataSum = data
       .map(({ val }) => val)
@@ -363,45 +393,45 @@
     }
     listenSizeRadioOnchange();
     function onClickNode(d) {
-        console.log("click", d);
-        const size = getCurrentSize();
-        console.log({size})
-        const sizeLength = Math.pow(Math.pow(2, size), 2);
-        const leadNodes = getLeadNodes(d.start, hilbertOrder);
-        const leadNode = parseInt(leadNodes[size]);
-        const leadD = hilbertData[leadNode];
-        let isSelectedError = false;
-        for (let index = leadD.start; index < leadD.start + sizeLength; index++) {
-            const dd = hilbertData[index];
-            if (dd.isDisabled) {
-                // state.currentNode = null;
-                isSelectedError = true;
-                // target.resetActiveNodes();
-                // resizeContent();
-                target.isSelectedError(isSelectedError);
-                alert('This area is not available!');
-                break;
-            }
+      console.log("click", d);
+      const size = getCurrentSize();
+      console.log({ size });
+      const sizeLength = Math.pow(Math.pow(2, size), 2);
+      const leadNodes = getLeadNodes(d.start, hilbertOrder);
+      const leadNode = parseInt(leadNodes[size]);
+      const leadD = hilbertData[leadNode];
+      let isSelectedError = false;
+      for (let index = leadD.start; index < leadD.start + sizeLength; index++) {
+        const dd = hilbertData[index];
+        if (dd.isDisabled) {
+          // state.currentNode = null;
+          isSelectedError = true;
+          // target.resetActiveNodes();
+          // resizeContent();
+          target.isSelectedError(isSelectedError);
+          alert("This area is not available!");
+          break;
         }
-        state.currentNode = leadD;
-        target.isSelectedError(isSelectedError);
-        const nodes = new Array(sizeLength)
-            .fill(leadNode)
-            .map((v, i) => v + i);
-        const resultMap = nodes.reduce((acc, v) => {
-            acc[v] = true;
-            return acc;
-        }, {});
-        console.log({
-            currentNode: state.currentNode,
-            size,
-            sizeLength,
-            leadNodes,
-            nodes,
-            resultMap
-        });
-        target.activeMap(resultMap);
-        loadColorsToHilberData();
+      }
+      state.currentNode = leadD;
+      target.isSelectedError(isSelectedError);
+      const nodes = new Array(sizeLength)
+          .fill(leadNode)
+          .map((v, i) => v + i);
+      const resultMap = nodes.reduce((acc, v) => {
+          acc[v] = true;
+          return acc;
+      }, {});
+      console.log({
+          currentNode: state.currentNode,
+          size,
+          sizeLength,
+          leadNodes,
+          nodes,
+          resultMap
+      });
+      target.activeMap(resultMap);
+      loadColorsToHilberData();
     }
 
     function getCurrentSize() {
@@ -413,7 +443,7 @@
 
   <script>
     // connect
-    const hilbertContractAddress = '0x112559F00408984CE1c8a7B6D844A61662182FA6';
+    const hilbertContractAddress = "0xf285A36a10F766359784d94F716bDa05BB2D6844";
     const unitPrice = ethers.utils.parseEther("0.001");
     const connectBtn = document.querySelector(".connectBtn");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -422,8 +452,6 @@
       contract: null,
       abi: null,
     };
-
-
 
     $(".connectBtn").click(async function (event) {
       await provider.send("eth_requestAccounts", []);
@@ -440,13 +468,13 @@
         signer
       );
     });
-    
+
     async function mintBuilding() {
       if (!web3State.addr) {
         alert("Please connect wallet first");
         return;
       }
-      if(target.isSelectedError()) {
+      if (target.isSelectedError()) {
         alert("This area is not available!");
         return;
       }
@@ -462,7 +490,7 @@
         size,
         price: price.toString(10),
         addr,
-      })
+      });
       const tx = await contract.mintBuilding(hIndex, quadrant, size, {
         value: price,
         from: addr,
@@ -480,7 +508,6 @@
     }
     initABI();
 
-
     async function getAllNftTokens() {
       console.log("getAllNftTokens");
       hilbertData.forEach((d) => {
@@ -489,7 +516,7 @@
       const contract = new ethers.Contract(
         hilbertContractAddress,
         await web3State.abi,
-        provider,
+        provider
       );
 
       const totalSupply = await contract.totalSupply();
@@ -498,9 +525,9 @@
         const metadata = await contract.tokenURI(index);
         allNftMetadatas.push(tokenURI2Json(metadata));
       }
-      allNftMetadatas.forEach(data => {
-        const hIndex = parseInt(getAttributesFromData(data, 'hIndex'));
-        const size = parseInt(getAttributesFromData(data, 'Size'));
+      allNftMetadatas.forEach((data) => {
+        const hIndex = parseInt(getAttributesFromData(data, "hIndex"));
+        const size = parseInt(getAttributesFromData(data, "Size"));
         const sizeLength = Math.pow(Math.pow(2, size), 2);
         for (let index = 0; index < sizeLength; index++) {
           const currentHIndex = hIndex + index;
@@ -512,38 +539,38 @@
     getAllNftTokens();
 
     function base64DataURItoString(datauri) {
-      const base64 = datauri.replace('data:application/json;base64,', '');
+      const base64 = datauri.replace("data:application/json;base64,", "");
       return atob(base64);
     }
 
     function tokenURI2Json(tokenURI) {
-      const base64 = tokenURI.replace('data:application/json;base64,', '');
+      const base64 = tokenURI.replace("data:application/json;base64,", "");
       const json = atob(base64);
       return JSON.parse(json);
     }
 
     function getAttributesFromData(data, attr) {
       const attributes = data.attributes;
-      const attrObj = attributes.find(v => v.trait_type === attr);
+      const attrObj = attributes.find((v) => v.trait_type === attr);
       return attrObj.value;
     }
 
     function listenImage() {
-      const imageInput = document.getElementById('imageInput');
-      imageInput.addEventListener('change', async (event) => {
+      const imageInput = document.getElementById("imageInput");
+      imageInput.addEventListener("change", async (event) => {
         const file = event.target.files[0];
         const image = new Image();
         image.src = URL.createObjectURL(file);
         image.onload = () => {
           const dimension = Math.pow(2, getCurrentSize());
 
-          const canvas = document.createElement('canvas');
+          const canvas = document.createElement("canvas");
           canvas.width = dimension;
           canvas.height = dimension;
 
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext("2d");
           ctx.drawImage(image, 0, 0, dimension, dimension);
-          
+
           const imageData = ctx.getImageData(0, 0, dimension, dimension);
           const rgbArray2D = [];
           for (let row = 0; row < dimension; row++) {
@@ -560,7 +587,7 @@
           state.curreuntPic2DArray = rgbArray2D;
           refreshPicInHilbert();
 
-          console.log('RGB array length:', rgbArray2D.length); // Output: 65536 (256 * 256)
+          console.log("RGB array length:", rgbArray2D.length); // Output: 65536 (256 * 256)
         };
       });
     }
@@ -603,17 +630,19 @@
         }
       });
       resizeContent();
-
     }
 
     function rotate90DegreesClockwise() {
-      if(!state.curreuntPic2DArray) return;
+      if (!state.curreuntPic2DArray) return;
       const dimension = state.curreuntPic2DArray.length;
-      const rotatedArray = new Array(dimension).fill(null).map(() => new Array(dimension).fill(null));
+      const rotatedArray = new Array(dimension)
+        .fill(null)
+        .map(() => new Array(dimension).fill(null));
 
       for (let row = 0; row < dimension; row++) {
         for (let col = 0; col < dimension; col++) {
-          rotatedArray[col][dimension - 1 - row] = state.curreuntPic2DArray[row][col];
+          rotatedArray[col][dimension - 1 - row] =
+            state.curreuntPic2DArray[row][col];
         }
       }
       state.curreuntPic2DArray = rotatedArray;
@@ -627,7 +656,8 @@
 
       // N: side length of 2D Hilbert curve
       const N = 1 << n;
-      if (x >= N || y >= N) throw new Error("PointOutOfRange: (" + x + ", " + y + ", " + n + ")");
+      if (x >= N || y >= N)
+        throw new Error("PointOutOfRange: (" + x + ", " + y + ", " + n + ")");
 
       let hIndex = 0;
 
@@ -676,8 +706,8 @@
     }
 
     function convertTwoDimensionToHilbert(twoDarr) {
-      if(!twoDarr) throw new Error('No 2D array');
-      if(!state.currentNode) throw new Error('No current node');
+      if (!twoDarr) throw new Error("No 2D array");
+      if (!state.currentNode) throw new Error("No current node");
 
       const arr = [];
       twoDarr.forEach((row, rowIdx) => {
@@ -687,32 +717,34 @@
           const [r, g, b] = rgb;
           arr.push({
             hIndex,
-            r, g, b,
+            r,
+            g,
+            b,
           });
-        })
+        });
       });
       return arr.sort((a, b) => a.hIndex - b.hIndex);
     }
 
     function convertUint32TwoDimensionArrayToBytes(array) {
       const bytes = [];
-      array.forEach(row => {
-        row.forEach(uint32 => {
+      array.forEach((row) => {
+        row.forEach((uint32) => {
           const r = uint32 & 0xff;
           const g = (uint32 >> 8) & 0xff;
           const b = (uint32 >> 16) & 0xff;
           bytes.push(r);
           bytes.push(g);
           bytes.push(b);
-        })
+        });
       });
       return bytes;
     }
 
     function rgbArray2DToBuffer(hArray) {
       const flattenedArray = [];
-      hArray.forEach(item => {
-        const {r, g, b} = item;
+      hArray.forEach((item) => {
+        const { r, g, b } = item;
         flattenedArray.push(r);
         flattenedArray.push(g);
         flattenedArray.push(b);
