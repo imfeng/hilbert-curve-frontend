@@ -164,7 +164,7 @@
   </style>
   <style>
     /* RWD */
-    @media (max-width: 768px) {
+    @media only screen and (max-width: 600px) {
       #content {
         display: flex;
         flex-direction: column;
@@ -252,11 +252,13 @@
       <div id="chart-container">
         <div class="btnGroup">
           <button class="btn" onclick="showLine()">toggle Lines</button>
+          <button class="btn" onclick="toggleNodeName()">toggle Number</button>
           <button class="btn" onclick="showOriginal()">toggle Picture</button>
           <button class="btn" onclick="rotate90DegreesClockwise()">
             rotate pic
           </button>
-          <button class="btn" onclick="reset()">reset</button>
+          
+          <button class="btn" onclick="resetCanvas()">reset</button>
         </div>
       </div>
     </div>
@@ -306,6 +308,13 @@
       currentNode: null,
       size: 0,
       curreuntPic2DArray: null,
+      colorsMap: [
+        // {
+        //   hIndex: 0,
+        //   size: 1,
+        //   colorrs: ['rgb(255,255,255)']
+        // }
+      ],
     };
 
     const chartElement = document.getElementById("chart");
@@ -316,7 +325,7 @@
       .data(hilbertData)
       .rangePadding(0.1)
       // .valFormatter(n => Math.round(n / hilbertLength * dataSum))
-      .showValTooltip(true)
+      .showValTooltip(false)
       .onRangeClick(onClickNode);
     // .onRangeHover((d) => {
     //   console.log('hover', d);
@@ -346,6 +355,11 @@
 
     function showOriginal() {
       target.toggleOriginal();
+      resizeContent();
+    }
+
+    function toggleNodeName() {
+      target.toggleNodeName();
       resizeContent();
     }
 
@@ -408,20 +422,23 @@
       }
       state.currentNode = leadD;
       target.isSelectedError(isSelectedError);
-      const nodes = new Array(sizeLength).fill(leadNode).map((v, i) => v + i);
+      const nodes = new Array(sizeLength)
+          .fill(leadNode)
+          .map((v, i) => v + i);
       const resultMap = nodes.reduce((acc, v) => {
-        acc[v] = true;
-        return acc;
+          acc[v] = true;
+          return acc;
       }, {});
       console.log({
-        currentNode: state.currentNode,
-        size,
-        sizeLength,
-        leadNodes,
-        nodes,
-        resultMap,
+          currentNode: state.currentNode,
+          size,
+          sizeLength,
+          leadNodes,
+          nodes,
+          resultMap
       });
       target.activeMap(resultMap);
+      loadColorsToHilberData();
     }
 
     function getCurrentSize() {
@@ -500,6 +517,9 @@
 
     async function getAllNftTokens() {
       console.log("getAllNftTokens");
+      hilbertData.forEach((d) => {
+        d.isDisabled = false;
+      });
       const contract = new ethers.Contract(
         hilbertContractAddress,
         await web3State.abi,
@@ -531,6 +551,9 @@
     }
 
     function tokenURI2Json(tokenURI) {
+      console.log({
+        tokenURI,
+      })
       const base64 = tokenURI.replace("data:application/json;base64,", "");
       const json = atob(base64);
       return JSON.parse(json);
@@ -581,16 +604,40 @@
     listenImage();
 
     function refreshPicInHilbert() {
-      if (!state.curreuntPic2DArray) return;
-      state.curreuntPic2DArray.forEach((row, rowIdx) => {
-        row.forEach((rgb, colIdx) => {
-          const hIndex = xy2hIndex(colIdx, rowIdx, hilbertOrder);
+      if(!state.curreuntPic2DArray) return;
+      loadColorsToHilberData();
+      resizeContent();
+    }
 
-          const [r, g, b] = rgb;
-          hilbertData[
-            state.currentNode.start + hIndex
-          ].color = `rgb(${r}, ${g}, ${b})`;
+    function resetAllColors() {
+      hilbertData.forEach((v, i) => {
+        hilbertData[i].color = null;
+      });
+    }
+
+    function loadColorsToHilberData() {
+      const allmap = {};
+      if(state.curreuntPic2DArray) {
+        state.curreuntPic2DArray.forEach((row, rowIdx) => {
+          row.forEach((rgb, colIdx) => {
+            const offset = xy2hIndex(colIdx, rowIdx, hilbertOrder);
+            
+            const [r, g, b] = rgb;
+            allmap[state.currentNode.start + offset] = `rgb(${r}, ${g}, ${b})`;
+            // hilbertData[state.currentNode.start + offset].color = `rgb(${r}, ${g}, ${b})`;
+          })
         });
+      }
+      state.colorsMap.forEach((color, hIndex) => {
+        allmap[hIndex] = color;
+        // if(hilbertData[hIndex].color !== color) {
+        //   hilbertData[hIndex].color = color;
+        // }
+      });
+      hilbertData.forEach((v, i) => {
+        if(hilbertData[i].color !== allmap[i]) {
+          hilbertData[i].color = allmap[i];
+        }
       });
       resizeContent();
     }
@@ -716,5 +763,13 @@
       // return Buffer.from(flattenedArray);
       return new Uint8Array(flattenedArray);
     }
+
+    function _resetCanvas() {
+      state.curreuntPic2DArray = null;
+      document.getElementById("imageInput").value = "";
+      resetAllColors();
+      getAllNftTokens();
+    }
+    window.resetCanvas = _.debounce(_resetCanvas, 500);
   </script>
 </body>

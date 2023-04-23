@@ -169,6 +169,13 @@ export default Kapsule({
       state.showOriginal = !state.showOriginal;
       return this;
     },
+    toggleNodeName(state) {
+      state.hideNodeName = !state.hideNodeName;
+      console.log({
+        hideNodeName: state.hideNodeName
+      })
+      return this;
+    },
     addActiveNode(state, hIndex) {
       state.activeMap = {
         ...state.activeMap,
@@ -185,6 +192,7 @@ export default Kapsule({
 
   stateInit() {
     return {
+      hideNodeName: false,
       showOriginal: false,
       showLinepaths: false,
       hilbert: d3Hilbert().simplifyCurves(true),
@@ -599,6 +607,7 @@ export default Kapsule({
         .filter(d => !d.pathVertices.length)
         // Those with no path (plain square)
         .text(d => {
+          if(state.hideNodeName) return '';
           const MAX_TEXT_COMPRESSION = 10;
 
           const name = labelAcessor(d);

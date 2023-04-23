@@ -620,6 +620,13 @@ var hilbert = Kapsule({
       state.showOriginal = !state.showOriginal;
       return this;
     },
+    toggleNodeName: function toggleNodeName(state) {
+      state.hideNodeName = !state.hideNodeName;
+      console.log({
+        hideNodeName: state.hideNodeName
+      });
+      return this;
+    },
     addActiveNode: function addActiveNode(state, hIndex) {
       state.activeMap = _objectSpread2(_objectSpread2({}, state.activeMap), {}, _defineProperty({}, hIndex, true));
       console.log(state);
@@ -632,6 +639,7 @@ var hilbert = Kapsule({
   },
   stateInit: function stateInit() {
     return {
+      hideNodeName: false,
       showOriginal: false,
       showLinepaths: false,
       hilbert: d3Hilbert().simplifyCurves(true),
@@ -968,6 +976,7 @@ var hilbert = Kapsule({
       })
       // Those with no path (plain square)
       .text(function (d) {
+        if (state.hideNodeName) return '';
         var MAX_TEXT_COMPRESSION = 10;
         var name = labelAcessor(d);
         return name.length > MAX_TEXT_COMPRESSION ? '' : name;
