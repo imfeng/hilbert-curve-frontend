@@ -1,45 +1,13 @@
 {
-  "name": "hilbert-chart",
+  "name": "hilbert-map-frontend",
   "version": "1.8.2",
-  "description": "A hilbert space-filling curve D3 chart for representing one-dimensional lengths on a two-dimensional space.",
-  "type": "module",
-  "unpkg": "dist/hilbert-chart.min.js",
-  "main": "dist/hilbert-chart.mjs",
-  "module": "dist/hilbert-chart.mjs",
-  "types": "dist/hilbert-chart.d.ts",
-  "exports": {
-    "umd": "./dist/hilbert-chart.min.js",
-    "default": "./dist/hilbert-chart.mjs"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/vasturiano/hilbert-chart.git"
-  },
-  "homepage": "https://github.com/vasturiano/hilbert-chart",
-  "keywords": [
-    "hilbert",
-    "space filling",
-    "curve",
-    "d3",
-    "chart"
-  ],
-  "author": {
-    "name": "Vasco Asturiano",
-    "url": "https://github.com/vasturiano"
-  },
+  "description": "",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/vasturiano/hilbert-chart/issues"
-  },
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "dev": "rollup -w -c rollup.config.dev.js",
     "prepare": "npm run build"
   },
-  "files": [
-    "dist/**/*",
-    "example/**/*"
-  ],
   "dependencies": {
     "accessor-fn": "1",
     "d3-axis": "1 - 3",
