@@ -138,7 +138,7 @@
   </style>
   <style>
     /* RWD */
-    @media (max-width: 768px) { 
+    @media only screen and (max-width: 600px) {
       #content {
         display: flex;
         flex-direction: column;
@@ -227,7 +227,7 @@
         <button onclick="showLine()">toggle Lines</button>
         <button onclick="showOriginal()">toggle Picture</button>
         <button onclick="rotate90DegreesClockwise()">rotate pic</button>
-        <button onclick="reset()">reset</button>
+        <button onclick="resetCanvas()">reset</button>
       </div>
     </div>
   </div>
@@ -276,6 +276,13 @@
       currentNode: null,
       size: 0,
       curreuntPic2DArray: null,
+      colorsMap: [
+        // {
+        //   hIndex: 0,
+        //   size: 1,
+        //   colorrs: ['rgb(255,255,255)']
+        // }
+      ],
     };
 
     const chartElement = document.getElementById("chart");
@@ -394,6 +401,7 @@
             resultMap
         });
         target.activeMap(resultMap);
+        loadColorsToHilberData();
     }
 
     function getCurrentSize() {
@@ -475,6 +483,9 @@
 
     async function getAllNftTokens() {
       console.log("getAllNftTokens");
+      hilbertData.forEach((d) => {
+        d.isDisabled = false;
+      });
       const contract = new ethers.Contract(
         hilbertContractAddress,
         await web3State.abi,
@@ -557,15 +568,42 @@
 
     function refreshPicInHilbert() {
       if(!state.curreuntPic2DArray) return;
-      state.curreuntPic2DArray.forEach((row, rowIdx) => {
-        row.forEach((rgb, colIdx) => {
-          const hIndex = xy2hIndex(colIdx, rowIdx, hilbertOrder);
-          
-          const [r, g, b] = rgb;
-          hilbertData[state.currentNode.start + hIndex].color = `rgb(${r}, ${g}, ${b})`;
-        })
+      loadColorsToHilberData();
+      resizeContent();
+    }
+
+    function resetAllColors() {
+      hilbertData.forEach((v, i) => {
+        hilbertData[i].color = null;
+      });
+    }
+
+    function loadColorsToHilberData() {
+      const allmap = {};
+      if(state.curreuntPic2DArray) {
+        state.curreuntPic2DArray.forEach((row, rowIdx) => {
+          row.forEach((rgb, colIdx) => {
+            const offset = xy2hIndex(colIdx, rowIdx, hilbertOrder);
+            
+            const [r, g, b] = rgb;
+            allmap[state.currentNode.start + offset] = `rgb(${r}, ${g}, ${b})`;
+            // hilbertData[state.currentNode.start + offset].color = `rgb(${r}, ${g}, ${b})`;
+          })
+        });
+      }
+      state.colorsMap.forEach((color, hIndex) => {
+        allmap[hIndex] = color;
+        // if(hilbertData[hIndex].color !== color) {
+        //   hilbertData[hIndex].color = color;
+        // }
+      });
+      hilbertData.forEach((v, i) => {
+        if(hilbertData[i].color !== allmap[i]) {
+          hilbertData[i].color = allmap[i];
+        }
       });
       resizeContent();
+
     }
 
     function rotate90DegreesClockwise() {
@@ -683,5 +721,13 @@
       // return Buffer.from(flattenedArray);
       return new Uint8Array(flattenedArray);
     }
+
+    function _resetCanvas() {
+      state.curreuntPic2DArray = null;
+      document.getElementById("imageInput").value = "";
+      resetAllColors();
+      getAllNftTokens();
+    }
+    window.resetCanvas = _.debounce(_resetCanvas, 500);
   </script>
 </body>
