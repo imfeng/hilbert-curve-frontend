@@ -551,7 +551,9 @@
           size,
           rgbs,
         })
-        parseRgbsHexStringToHIndexItems(hIndex, rgbs);
+        if(rgbs && rgbs !== '0x00') {
+          parseRgbsHexStringToHIndexItems(hIndex, rgbs);
+        }
         const sizeLength = Math.pow(Math.pow(2, size), 2);
         for (let index = 0; index < sizeLength; index++) {
           const currentHIndex = hIndex + index;
