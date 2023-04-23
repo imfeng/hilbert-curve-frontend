@@ -1,4 +1,4 @@
-import d3Hilbert from '../dist/d3-hilbert.js'
+import d3Hilbert from '../docs/dist/d3-hilbert.js'
 const args = process.argv.slice(2);
 const order = parseInt(args[0]) || 6;
 function main() {
