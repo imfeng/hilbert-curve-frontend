@@ -252,10 +252,12 @@
       <div id="chart-container">
         <div class="btnGroup">
           <button class="btn" onclick="showLine()">toggle Lines</button>
+          <button class="btn" onclick="toggleNodeName()">toggle Number</button>
           <button class="btn" onclick="showOriginal()">toggle Picture</button>
           <button class="btn" onclick="rotate90DegreesClockwise()">
             rotate pic
           </button>
+          
           <button class="btn" onclick="resetCanvas()">reset</button>
         </div>
       </div>
@@ -323,7 +325,7 @@
       .data(hilbertData)
       .rangePadding(0.1)
       // .valFormatter(n => Math.round(n / hilbertLength * dataSum))
-      .showValTooltip(true)
+      .showValTooltip(false)
       .onRangeClick(onClickNode);
     // .onRangeHover((d) => {
     //   console.log('hover', d);
@@ -353,6 +355,11 @@
 
     function showOriginal() {
       target.toggleOriginal();
+      resizeContent();
+    }
+
+    function toggleNodeName() {
+      target.toggleNodeName();
       resizeContent();
     }
 
