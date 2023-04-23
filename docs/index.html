@@ -162,6 +162,17 @@
       text-align: center;
     }
   </style>
+  <style>
+    /* RWD */
+    @media (max-width: 768px) { 
+      #content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+  </style>
 </head>
 <body>
   <div id="content">
@@ -259,7 +270,7 @@
     const ERROR_COLOR = "red";
     // Hilbert Spec
     const canvaseWidthRate = 0.63;
-    const hilbertOrder = 6;
+    const hilbertOrder = 7;
     const hilbertLength = Math.pow(4, hilbertOrder);
 
     // Gen random data
