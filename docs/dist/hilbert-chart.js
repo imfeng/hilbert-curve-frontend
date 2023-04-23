@@ -13535,7 +13535,7 @@
             return d.color;
           }
           if (d.isDisabled) {
-            return 'grey';
+            return d.color || 'grey';
           }
           if (d.isDisabled && state.activeMap[d.start]) {
             return 'red';

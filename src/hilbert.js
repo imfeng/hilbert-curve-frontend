@@ -558,10 +558,10 @@ export default Kapsule({
 
       const getColor = (d) => {
         if(state.showOriginal) {
-          return d.color;
+          return d.color;s
         }
         if(d.isDisabled) {
-          return 'grey';
+          return d.color || 'grey';
         }
         if(d.isDisabled && state.activeMap[d.start]) {
           return 'red';

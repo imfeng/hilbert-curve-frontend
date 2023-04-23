@@ -294,11 +294,9 @@
       // const isDisabled = getRandomBoolean();
       const d = {
         start: carry,
-        length: val, // getHilbertVal(val),
+        length: val,
         val,
         ...rest,
-        img: "/11.jpeg",
-        hi: "123",
         isDisabled: false,
       };
       carry += d.length;
@@ -448,7 +446,7 @@
 
   <script>
     // connect
-    const hilbertContractAddress = "0x3507b1358E0cE7C639021A21EEDACd8279278629";
+    const hilbertContractAddress = "0xd21a8e7c96a59268444CE6917fd24ea39c19C574";
     const unitPrice = ethers.utils.parseEther("0.001");
     const connectBtn = document.querySelector(".connectBtn");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -496,11 +494,23 @@
         price: price.toString(10),
         addr,
       });
-      const tx = await contract.mintBuilding(hIndex, quadrant, size, {
-        value: price,
-        from: addr,
-      });
-      console.log({ tx });
+
+      const rgbsInfo = getCurrentRgbsInfo();
+      if(rgbsInfo.result.length) {
+        console.log({ hIndex, quadrant, size, colors: rgbsInfo.result });
+        const tx = await contract.mintBuildingWithColors(hIndex, quadrant, size, rgbsInfo.result, {
+          value: price,
+          from: addr,
+        });
+        console.log({tx});
+      } else {
+        const tx = await contract.mintBuilding(hIndex, quadrant, size, {
+          value: price,
+          from: addr,
+        });
+        console.log({ tx });
+      }
+
     }
 
     function delay(ms) {
@@ -515,6 +525,8 @@
 
     async function getAllNftTokens() {
       console.log("getAllNftTokens");
+      state.colorsMap = {};
+      state.curreuntPic2DArray = null;
       hilbertData.forEach((d) => {
         d.isDisabled = false;
       });
@@ -533,15 +545,47 @@
       allNftMetadatas.forEach((data) => {
         const hIndex = parseInt(getAttributesFromData(data, "hIndex"));
         const size = parseInt(getAttributesFromData(data, "Size"));
+        const rgbs = getAttributesFromData(data, "RGBs");
+        console.log({
+          hIndex,
+          size,
+          rgbs,
+        })
+        parseRgbsHexStringToHIndexItems(hIndex, rgbs);
         const sizeLength = Math.pow(Math.pow(2, size), 2);
         for (let index = 0; index < sizeLength; index++) {
           const currentHIndex = hIndex + index;
           hilbertData[currentHIndex].isDisabled = true;
         }
       });
-      resizeContent();
+      loadColorsToHilberData();
     }
     getAllNftTokens();
+
+    function parseRgbsHexStringToHIndexItems(startHIndex, rgbsHex) {
+      
+      // rgbsHex = '0x.......'
+      const rgbs = rgbsHex.replace("0x", "");
+      const rgbsMap = {};
+      let offset = 0;
+      for (let index = 0; index < rgbs.length; index += 6) {
+        const rgb = rgbs.slice(index, index + 6);
+        const r = parseInt(rgb.slice(0, 2), 16);
+        const g = parseInt(rgb.slice(2, 4), 16);
+        const b = parseInt(rgb.slice(4, 6), 16);
+        rgbsMap[startHIndex + offset] = `rgb(${r},${g},${b})`
+        offset++;
+      }
+      console.log('parseRgbsHexStringToHIndexItems', {
+        rgbsHex,
+        startHIndex,
+        rgbsMap,
+      })
+      state.colorsMap = {
+        ...state.colorsMap,
+        ...rgbsMap,
+      };
+    }
 
     function base64DataURItoString(datauri) {
       const base64 = datauri.replace("data:application/json;base64,", "");
@@ -549,9 +593,6 @@
     }
 
     function tokenURI2Json(tokenURI) {
-      console.log({
-        tokenURI,
-      });
       const base64 = tokenURI.replace("data:application/json;base64,", "");
       const json = atob(base64);
       return JSON.parse(json);
@@ -616,25 +657,31 @@
     function loadColorsToHilberData() {
       const allmap = {};
       if (state.curreuntPic2DArray) {
+        const debugFileHIndexMap = {};
         state.curreuntPic2DArray.forEach((row, rowIdx) => {
           row.forEach((rgb, colIdx) => {
             const offset = xy2hIndex(colIdx, rowIdx, hilbertOrder);
 
             const [r, g, b] = rgb;
             allmap[state.currentNode.start + offset] = `rgb(${r}, ${g}, ${b})`;
+            debugFileHIndexMap[state.currentNode.start + offset] = `rgb(${r}, ${g}, ${b})`;
             // hilbertData[state.currentNode.start + offset].color = `rgb(${r}, ${g}, ${b})`;
           });
         });
+        console.log({
+          debugFileHIndexMap,
+        })
       }
-      state.colorsMap.forEach((color, hIndex) => {
+      Object.entries(state.colorsMap).forEach((item, _) => {
+        const [hIndex, color] = item;
         allmap[hIndex] = color;
         // if(hilbertData[hIndex].color !== color) {
         //   hilbertData[hIndex].color = color;
         // }
       });
       hilbertData.forEach((v, i) => {
-        if (hilbertData[i].color !== allmap[i]) {
-          hilbertData[i].color = allmap[i];
+        if (v.color !== allmap[i]) {
+          v.color = allmap[i];
         }
       });
       resizeContent();
@@ -713,6 +760,32 @@
       return hIndex;
     }
 
+    function getCurrentRgbsInfo() {
+      if (!state.curreuntPic2DArray) {
+        return {
+          hArray: [],
+          bytesArray: [],
+          result: "0x00",
+        };
+      };
+      const hArray = convertTwoDimensionToHilbert(state.curreuntPic2DArray);
+      const bytesArray = convertUint32TwoDimensionArrayToBytes(hArray);
+      const hexArr = convertUint8ArrayToHexStringArray(bytesArray);
+      const result = ethers.utils.solidityPack(
+        hexArr.map(v => 'uint8'),
+        hexArr,
+      );
+      console.log({
+        hexArr,
+        result
+      })
+      return {
+        hArray,
+        bytesArray,
+        result,
+      }
+    }
+
     function convertTwoDimensionToHilbert(twoDarr) {
       if (!twoDarr) throw new Error("No 2D array");
       if (!state.currentNode) throw new Error("No current node");
@@ -737,16 +810,23 @@
     function convertUint32TwoDimensionArrayToBytes(array) {
       const bytes = [];
       array.forEach((row) => {
-        row.forEach((uint32) => {
-          const r = uint32 & 0xff;
-          const g = (uint32 >> 8) & 0xff;
-          const b = (uint32 >> 16) & 0xff;
-          bytes.push(r);
-          bytes.push(g);
-          bytes.push(b);
-        });
+        const { r, g, b, } = row;
+        bytes.push(r);
+        bytes.push(g);
+        bytes.push(b);
       });
       return bytes;
+    }
+
+    function convertUint8NumberToHex(number) {
+      const hex = number.toString(16);
+      return '0x' + (hex.length === 1 ? "0" + hex : hex);
+    }
+
+    function convertUint8ArrayToHexStringArray(array) {
+      return array.map((number) => {
+        return convertUint8NumberToHex(number);
+      });
     }
 
     function rgbArray2DToBuffer(hArray) {
