@@ -257,7 +257,7 @@
           <button class="btn" onclick="rotate90DegreesClockwise()">
             rotate pic
           </button>
-          
+
           <button class="btn" onclick="resetCanvas()">reset</button>
         </div>
       </div>
@@ -422,20 +422,18 @@
       }
       state.currentNode = leadD;
       target.isSelectedError(isSelectedError);
-      const nodes = new Array(sizeLength)
-          .fill(leadNode)
-          .map((v, i) => v + i);
+      const nodes = new Array(sizeLength).fill(leadNode).map((v, i) => v + i);
       const resultMap = nodes.reduce((acc, v) => {
-          acc[v] = true;
-          return acc;
+        acc[v] = true;
+        return acc;
       }, {});
       console.log({
-          currentNode: state.currentNode,
-          size,
-          sizeLength,
-          leadNodes,
-          nodes,
-          resultMap
+        currentNode: state.currentNode,
+        size,
+        sizeLength,
+        leadNodes,
+        nodes,
+        resultMap,
       });
       target.activeMap(resultMap);
       loadColorsToHilberData();
@@ -450,7 +448,7 @@
 
   <script>
     // connect
-    const hilbertContractAddress = "0xFAa853c66f73d1aE0eE26e29FEeEc7f8eF9C5781";
+    const hilbertContractAddress = "0x3507b1358E0cE7C639021A21EEDACd8279278629";
     const unitPrice = ethers.utils.parseEther("0.001");
     const connectBtn = document.querySelector(".connectBtn");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -553,7 +551,7 @@
     function tokenURI2Json(tokenURI) {
       console.log({
         tokenURI,
-      })
+      });
       const base64 = tokenURI.replace("data:application/json;base64,", "");
       const json = atob(base64);
       return JSON.parse(json);
@@ -604,7 +602,7 @@
     listenImage();
 
     function refreshPicInHilbert() {
-      if(!state.curreuntPic2DArray) return;
+      if (!state.curreuntPic2DArray) return;
       loadColorsToHilberData();
       resizeContent();
     }
@@ -617,15 +615,15 @@
 
     function loadColorsToHilberData() {
       const allmap = {};
-      if(state.curreuntPic2DArray) {
+      if (state.curreuntPic2DArray) {
         state.curreuntPic2DArray.forEach((row, rowIdx) => {
           row.forEach((rgb, colIdx) => {
             const offset = xy2hIndex(colIdx, rowIdx, hilbertOrder);
-            
+
             const [r, g, b] = rgb;
             allmap[state.currentNode.start + offset] = `rgb(${r}, ${g}, ${b})`;
             // hilbertData[state.currentNode.start + offset].color = `rgb(${r}, ${g}, ${b})`;
-          })
+          });
         });
       }
       state.colorsMap.forEach((color, hIndex) => {
@@ -635,7 +633,7 @@
         // }
       });
       hilbertData.forEach((v, i) => {
-        if(hilbertData[i].color !== allmap[i]) {
+        if (hilbertData[i].color !== allmap[i]) {
           hilbertData[i].color = allmap[i];
         }
       });
